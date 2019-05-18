@@ -1,0 +1,689 @@
+
+	//if len(c.Listener.Addr) == 0 {
+	//	c.Listener.Addr = "0.0.0.0"
+	//	c.Listener.Port = 8484
+	//}
+
+
+//// NewContext returns a Context instance.
+//func (e *Echo) NewContext(r *http.Request, w http.ResponseWriter) Context {
+//	return &context{
+//		request:  r,
+//		response: NewResponse(w, e),
+//		store:    make(Map),
+//		echo:     e,
+//		pvalues:  make([]string, *e.maxParam),
+//		handler:  NotFoundHandler,
+//	}
+//}
+
+	// copy
+	//_, err := os.Stat(cfg.MetaFile)
+	//if err != nil {
+	//	w, _ := os.Create(cfg.MetaFile)
+	//	r, _ := os.Open(testMetaFile)
+	//	io.Copy(w, r)
+	//	w.Close()
+	//	r.Close()
+	//}
+
+
+
+//func mapFields(x *models.Meta) map[string]interface{}  {
+//	o := make(map[string]interface{})
+//	v := reflect.ValueOf(x).Elem()
+//	t := v.Type()
+//	for i := 0; i < v.NumField(); i++ {
+//		f := t.FieldByIndex([]int{i})
+//		// skip unexported fields
+//		if f.PkgPath != "" {
+//			continue
+//		}
+//		o[f.Name] = v.FieldByIndex([]int{i}).Interface()
+//	}
+//	return o
+//}
+//
+//func applyMap(u *models.Meta, m map[string]interface{} ) map[string]interface{}  {
+//	t := reflect.TypeOf(u).Elem()
+//	o := make(map[string]interface{})
+//	for i := 0; i < t.NumField(); i++ {
+//		f := t.FieldByIndex([]int{i})
+//		// skip unexported fields
+//		if f.PkgPath != "" {
+//			continue
+//		}
+//		if x, ok := m[f.Name]; ok {
+//			k := f.Tag.Get("json")
+//			o[k] = x
+//		}
+//	}
+//	return o
+//}
+
+
+
+	//id, err := strconv.Atoi(i)
+	//if err != nil {
+	//	return c.NoContent(http.StatusBadRequest)
+	//}
+
+
+	//e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
+	//	return func(c echo.Context) error {
+	//		cc := &midware.Context{Context: c}
+	//		return h(cc)
+	//	}
+	//})
+
+	//e.GET("/", HandlerFunction, Middleware1, Middleware2, Middleware3)
+	//// RouteHandler = Middleware1(Middleware2(Middleware3(HandlerFunction)
+
+	//e.GET("/cc", func(c echo.Context) error {
+	//	cc := c.(*midware.Context)
+	//	cc.Foo()
+	//	cc.Bar()
+	//	return cc.String(200, "OK")
+	//})
+
+
+
+type Validatable interface {
+        Validate() error
+}
+
+var ErrNotValidatable = errors.New("Type is not validatable")
+
+type Validator struct{}
+
+func (v *Validator) Validate(i interface{}) error {
+        if validatable, ok := i.(Validatable); ok {
+                return validatable.Validate()
+        }
+        return ErrNotValidatable
+}
+
+
+
+
+/*
+	v := Values{map[string]string{
+		"1": "one",
+		"2": "two",
+	}}
+
+	c := context.Background()
+	c2 := context.WithValue(c, "myvalues", v)
+
+	fmt.Println(c2.Value("myvalues").(Values).Get("2"))
+}
+
+type Values struct {
+	m map[string]string
+}
+
+func (v Values) Get(key string) string {
+	return v.m[key]
+}
+
+*/
+
+
+
+			//dir, _ := os.Getwd()
+			//log.Printf("crnt dir %v", dir)
+
+
+package middleware
+
+import (
+	"encoding/base64"
+	"strconv"
+	"strings"
+
+	"github.com/labstack/echo"
+)
+
+type (
+	// BasicAuthConfig defines the config for BasicAuth middleware.
+	BasicAuthConfig struct {
+		// Skipper defines a function to skip middleware.
+		Skipper Skipper
+
+		// Validator is a function to validate BasicAuth credentials.
+		// Required.
+		Validator BasicAuthValidator
+
+		// Realm is a string to define realm attribute of BasicAuth.
+		// Default value "Restricted".
+		Realm string
+	}
+
+	// BasicAuthValidator defines a function to validate BasicAuth credentials.
+	BasicAuthValidator func(string, string, echo.Context) (bool, error)
+)
+
+const (
+	basic        = "basic"
+	defaultRealm = "Restricted"
+)
+
+var (
+	// DefaultBasicAuthConfig is the default BasicAuth middleware config.
+	DefaultBasicAuthConfig = BasicAuthConfig{
+		Skipper: DefaultSkipper,
+		Realm:   defaultRealm,
+	}
+)
+
+// BasicAuth returns an BasicAuth middleware.
+//
+// For valid credentials it calls the next handler.
+// For missing or invalid credentials, it sends "401 - Unauthorized" response.
+func BasicAuth(fn BasicAuthValidator) echo.MiddlewareFunc {
+	c := DefaultBasicAuthConfig
+	c.Validator = fn
+	return BasicAuthWithConfig(c)
+}
+
+// BasicAuthWithConfig returns an BasicAuth middleware with config.
+// See `BasicAuth()`.
+func BasicAuthWithConfig(config BasicAuthConfig) echo.MiddlewareFunc {
+	// Defaults
+	if config.Validator == nil {
+		panic("echo: basic-auth middleware requires a validator function")
+	}
+	if config.Skipper == nil {
+		config.Skipper = DefaultBasicAuthConfig.Skipper
+	}
+	if config.Realm == "" {
+		config.Realm = defaultRealm
+	}
+
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			if config.Skipper(c) {
+				return next(c)
+			}
+
+			auth := c.Request().Header.Get(echo.HeaderAuthorization)
+			l := len(basic)
+
+			if len(auth) > l+1 && strings.ToLower(auth[:l]) == basic {
+				b, err := base64.StdEncoding.DecodeString(auth[l+1:])
+				if err != nil {
+					return err
+				}
+				cred := string(b)
+				for i := 0; i < len(cred); i++ {
+					if cred[i] == ':' {
+						// Verify credentials
+						valid, err := config.Validator(cred[:i], cred[i+1:], c)
+						if err != nil {
+							return err
+						} else if valid {
+							return next(c)
+						}
+						break
+					}
+				}
+			}
+
+			realm := defaultRealm
+			if config.Realm != defaultRealm {
+				realm = strconv.Quote(config.Realm)
+			}
+
+			// Need to return `401` for browsers to pop-up login box.
+			c.Response().Header().Set(echo.HeaderWWWAuthenticate, basic+" realm="+realm)
+			return echo.ErrUnauthorized
+		}
+	}
+}
+
+
+
+
+package middleware
+
+import (
+	"encoding/base64"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
+	"github.com/labstack/echo"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestBasicAuth(t *testing.T) {
+	e := echo.New()
+	req := httptest.NewRequest(echo.GET, "/", nil)
+	res := httptest.NewRecorder()
+	c := e.NewContext(req, res)
+	f := func(u, p string, c echo.Context) (bool, error) {
+		if u == "joe" && p == "secret" {
+			return true, nil
+		}
+		return false, nil
+	}
+	h := BasicAuth(f)(func(c echo.Context) error {
+		return c.String(http.StatusOK, "test")
+	})
+
+	// Valid credentials
+	auth := basic + " " + base64.StdEncoding.EncodeToString([]byte("joe:secret"))
+	req.Header.Set(echo.HeaderAuthorization, auth)
+	assert.NoError(t, h(c))
+
+	h = BasicAuthWithConfig(BasicAuthConfig{
+		Skipper:   nil,
+		Validator: f,
+		Realm:     "someRealm",
+	})(func(c echo.Context) error {
+		return c.String(http.StatusOK, "test")
+	})
+
+	// Valid credentials
+	auth = basic + " " + base64.StdEncoding.EncodeToString([]byte("joe:secret"))
+	req.Header.Set(echo.HeaderAuthorization, auth)
+	assert.NoError(t, h(c))
+
+	// Case-insensitive header scheme
+	auth = strings.ToUpper(basic) + " " + base64.StdEncoding.EncodeToString([]byte("joe:secret"))
+	req.Header.Set(echo.HeaderAuthorization, auth)
+	assert.NoError(t, h(c))
+
+	// Invalid credentials
+	auth = basic + " " + base64.StdEncoding.EncodeToString([]byte("joe:invalid-password"))
+	req.Header.Set(echo.HeaderAuthorization, auth)
+	he := h(c).(*echo.HTTPError)
+	assert.Equal(t, http.StatusUnauthorized, he.Code)
+	assert.Equal(t, basic+` realm="someRealm"`, res.Header().Get(echo.HeaderWWWAuthenticate))
+
+	// Missing Authorization header
+	req.Header.Del(echo.HeaderAuthorization)
+	he = h(c).(*echo.HTTPError)
+	assert.Equal(t, http.StatusUnauthorized, he.Code)
+
+	// Invalid Authorization header
+	auth = base64.StdEncoding.EncodeToString([]byte("invalid"))
+	req.Header.Set(echo.HeaderAuthorization, auth)
+	he = h(c).(*echo.HTTPError)
+	assert.Equal(t, http.StatusUnauthorized, he.Code)
+}
+
+
+
+
+//d, err := ioutil.ReadAll(req.Body)
+//if check(err) {
+//	return c.NoContent(http.StatusBadRequest)
+//}
+//
+//log.Printf("isPost: %v, key: %v, data: %v", isPost, k, string(d))
+
+
+
+package broker
+
+import (
+	"encoding/json"
+	"fmt"
+	"github.com/go-redis/redis"
+	"github.com/labstack/echo/v4"
+	//"io/ioutil"
+	//"log"
+	"net/http"
+	"strings"
+	"time"
+)
+
+// key, value
+type KV struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+type Layer struct {
+	Metadata struct {
+		SRSN        string    `json:"SR_SN"`
+		LastUpdated time.Time `json:"last_updated"`
+	} `json:"metadata"`
+	Configuration []struct {
+		Key   string   `json:"key"`
+		Value string   `json:"value"`
+		Tags  []string `json:"tags"`
+	} `json:"configuration"`
+}
+
+// ConfigGetTagHandler handles /config/<key-path> requests
+// returns json with single value or list of config key/value pairs
+func ConfigGetHandler(c echo.Context) error {
+	//k := c.Request().RequestURI
+	//k = k[1+meta.ConfigPrefixLen:]
+	//redis := Context().Redis
+	//
+	////log.Printf("config GET key %v", k)
+	//
+	//res := redis.HGet(meta.ConfigPrefix, k)
+	//
+	//if !isNilResult(res.Err()) {
+	//	json, err := prepareGetResult(res)
+	//	check(err)
+	//	return c.JSONBlob(http.StatusOK, json)
+	//}
+	//// k not found - try scan
+	//// hscan /config 0 match /keypad/*
+	//if !strings.HasSuffix(k,"/") {
+	//	k = k + "/"
+	//}
+	//if !strings.Contains(k, "*") {
+	//	k = k + "*"
+	//}
+	//
+	//var cursor uint64 = 0
+	//list := make([]KV, 0, 10)
+	//for {
+	//	// count doesn't matter?
+	//	scanRes := redis.HScan(meta.ConfigPrefix, cursor, k, 100)
+	//	check(scanRes.Err())
+	//	keys, curs, err := scanRes.Result()
+	//	check(err)
+	//	for idx := 0; idx < len(keys); idx += 2 {
+	//		k := removeTagPrefix(keys[idx])
+	//		kv := KV{Key: k, Value: keys[idx+1]}
+	//		list = append(list, kv)
+	//	}
+	//	if curs == 0 {
+	//		break
+	//	}
+	//	cursor = curs
+	//}
+	//jsn, err := json.Marshal(list)
+	//check(err)
+	//return c.JSONBlob(http.StatusOK, jsn)
+
+	return nil
+
+	//k := c.Request().RequestURI
+	//k = k[1+meta.ConfigPrefixLen:]
+	//redis := Context().Redis
+	//
+	////log.Printf("config GET key %v", k)
+	//
+	//res := redis.HGet(meta.ConfigPrefix, k)
+	//
+	//if !isNilResult(res.Err()) {
+	//	json, err := prepareGetResult(res)
+	//	check(err)
+	//	return c.JSONBlob(http.StatusOK, json)
+	//}
+	//// k not found - try scan
+	//// hscan /config 0 match /keypad/*
+	//if !strings.HasSuffix(k,"/") {
+	//	k = k + "/"
+	//}
+	//if !strings.Contains(k, "*") {
+	//	k = k + "*"
+	//}
+	//
+	//var cursor uint64 = 0
+	//list := make([]KV, 0, 10)
+	//for {
+	//	// count doesn't matter?
+	//	scanRes := redis.HScan(meta.ConfigPrefix, cursor, k, 100)
+	//	check(scanRes.Err())
+	//	keys, curs, err := scanRes.Result()
+	//	check(err)
+	//	for idx := 0; idx < len(keys); idx += 2 {
+	//		k := removeTagPrefix(keys[idx])
+	//		kv := KV{Key: k, Value: keys[idx+1]}
+	//		list = append(list, kv)
+	//	}
+	//	if curs == 0 {
+	//		break
+	//	}
+	//	cursor = curs
+	//}
+	//jsn, err := json.Marshal(list)
+	//check(err)
+	//return c.JSONBlob(http.StatusOK, jsn)
+	return c.JSONBlob(http.StatusOK, []byte("{}"))
+}
+
+func ConfigPostHandler(c echo.Context) error {
+	//req := c.Request()
+	//payload, err := ioutil.ReadAll(req.Body)
+	//if check(err) {
+	//	return c.NoContent(http.StatusBadRequest)
+	//}
+	////log.Printf("config POST req %+v body %v", req, string(payload))
+	//contType := DetectContentType(req)
+	//// handle only JSON for now
+	//if contType != ContTypeJson {
+	//	log.Printf("Error - JSON type expected")
+	//	return c.NoContent(http.StatusBadRequest)
+	//}
+	//
+	//var layer Layer
+	//err = json.Unmarshal(payload, &layer)
+	//if check(err) {
+	//	// invalid json
+	//	log.Printf("Invalid JSON")
+	//	return c.NoContent(http.StatusBadRequest)
+	//}
+	//
+	//redis := Context().Redis
+	////log.Printf("Layer: %+v", layer)
+	//for _, x := range layer.Configuration {
+	//	for _, tag := range x.Tags {
+	//		hkey := SafeDelim(tag, x.Key)
+	//		// log.Printf("HSet %v: %v", hkey, x.Value)
+	//		redis.HSet(meta.ConfigPrefix, hkey, x.Value)
+	//		set := SafeDelim(meta.ConfigPrefix, tag)
+	//		//log.Printf("SAdd: %v: %v", set, x.Key)
+	//		redis.SAdd(set, x.Key)
+	//	}
+	//}
+	return c.NoContent(http.StatusNoContent)
+}
+
+func isNilResult(err error) bool {
+	if err == nil {
+		return false
+	}
+	if err.Error() == "redis: nil" {
+		return true
+	}
+	return false
+}
+
+//func prepareResult(cmdRes *redis.SliceCmd) (jsn []byte, err error) {
+//	_, err1 := cmdRes.Result()
+//	check(err1)
+//	args := cmdRes.Args()
+//	vals := cmdRes.Val()
+//	//l := len(vals)
+//	list := make([]KV, 0)
+//	if len(args) > 2 {
+//		args = args[2:]
+//	}
+//	for idx, val := range vals {
+//		if val != nil {
+//			list = append(list, KV{Key: args[idx].(string), Value: val.(string)})
+//		}
+//	}
+//	jsn, err = json.Marshal(list)
+//	check(err)
+//	return jsn, err
+//}
+
+func removeTagPrefix(k string) string {
+	pos := strings.Index(k, "/")
+	if pos >= 0 {
+		k = k[1+pos:]
+	}
+	return k
+}
+
+func prepareGetResult(cmdRes *redis.StringCmd) (jsn []byte, err error) {
+	args := cmdRes.Args()
+	//log.Printf("cmdRes StringCmd %+v", args)
+	val, err1 := cmdRes.Result()
+	//log.Printf("err1 %v", err1)
+	check(err1)
+	// we expect single result
+	list := make([]KV, 0)
+	if len(args) > 2 {
+		args = args[2:]
+	}
+	list = append(list, KV{Key: removeTagPrefix(args[0].(string)), Value: val})
+	jsn, err = json.Marshal(list)
+	check(err)
+	//log.Printf("JSON %v", string(jsn))
+	return jsn, err
+}
+
+func SafeDelim(a, b string) string {
+	if strings.HasSuffix(a, "/") {
+		if strings.HasPrefix(b, "/") {
+			return fmt.Sprintf("%v%v", a, b[1:])
+		}
+		return fmt.Sprintf("%v%v", a, b)
+	}
+	if strings.HasPrefix(b, "/") {
+		return fmt.Sprintf("%v%v", a, b)
+	}
+	return fmt.Sprintf("%v/%v", a, b)
+}
+
+func copy(dst reflect.Type, src reflect.Type) error {
+
+	//x, ok := src.FieldByName("LogLevel")
+	//if ok {
+	//	fmt.Printf("\nLogLevel: %v, c.LogLevel %v\n", x.Name, c.LogLevel)
+	//}
+
+	switch src.Kind() {
+	case reflect.Array, reflect.Chan, reflect.Map, reflect.Ptr, reflect.Slice, reflect.Interface:
+		// recursion
+		copy(dst, src.Elem())
+	case reflect.Struct:
+		for i := 0; i < src.NumField(); i++ {
+			f := src.Field(i)
+			fmt.Println("SRC Field", i, "name is", f.Name, ", type:", f.Type.Name(), "kind:", f.Type.Kind())
+			fmt.Printf("F %+v\n", f)
+
+			tt := f.Type
+			for j := 0; j < tt.NumField(); j++ {
+				//ff := tt.Field(j)
+				g := tt.FieldByIndex([]int{i})
+				fmt.Printf("G %+v", g)
+
+				//fmt.Println("Field", j, "name is", ff.Name, ", type:", ff.Type.Name(), "kind:", ff.Type.Kind())
+
+				//if ff.Name == "LogLevel" {
+				//	//fType := reflect.TypeOf(ff)
+				//	//fVal := reflect.New(fType)
+				//	//fVal.Elem().Field(0).SetInt(20)
+				//	//fVal.Elem().Field(1).SetString("Greetings")
+				//	//v := reflect.ValueOf(&ff)
+				//	//fmt.Printf("\nv %v\n", v, v.Interface())
+				//	fVal := reflect.New(ff.Type)
+				//	fVal.Elem().SetString("foo")
+				//}
+			}
+		}
+	}
+	return nil
+}
+
+
+
+//func HandlerFunction(ctx echo.Context) error {
+//	ctx.Logger().Info("in handler function")
+//	return nil
+//}
+
+//func middlewareFunc(i int) echo.MiddlewareFunc {
+//	return func(next echo.HandlerFunc) echo.HandlerFunc {
+//		return func(ctx echo.Context) error {
+//			ctx.Logger().Infof("middleware #%d start!", i)
+//			next(ctx)
+//			ctx.Logger().Infof("middleware #%d end!", i)
+//			return nil
+//		}
+//	}
+//}
+//
+//var (
+//	Middleware1 = middlewareFunc(1)
+//	Middleware2 = middlewareFunc(2)
+//	Middleware3 = middlewareFunc(3)
+//)
+
+/*
+"middleware #1 start!"}
+"middleware #2 start!"}
+"middleware #3 start!"}
+
+"in handler function"}
+
+"middleware #3 end!"}
+"middleware #2 end!"}
+"middleware #1 end!"}
+*/
+
+	//for {
+	//	if err := json.NewEncoder(c.Response()).Encode(rp); err != nil {
+	//		log.Printf("Error %v", err)
+	//		return nil
+	//	}
+	//	c.Response().Flush()
+	//	time.Sleep(1 * time.Second)
+	//}
+
+
+
+//e.Pre(midware.RequestIDMiddleware)
+//e.GET("/stream", func(c echo.Context) error {
+//	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+//	c.Response().WriteHeader(http.StatusOK)
+//	for {
+//		for _, l := range models.Locations {
+//			if err := json.NewEncoder(c.Response()).Encode(l); err != nil {
+//				return err
+//			}
+//			c.Response().Flush()
+//			time.Sleep(1 * time.Second)
+//		}
+//	}
+//	return nil
+//})
+
+	//e.Logger.SetLevel(log.DEBUG)
+	//e.Logger.SetLevel(log.INFO)
+	// disable json log (for develop)
+	// using json in prod is good
+	//e.Logger.SetLevel(99)
+
+	//e.StdLogger.Printf("stdlog writing...\n")
+	//e.Logger.SetPrefix("")
+	//e.Logger.Printf("LOGGER PRINT")
+	//e.Logger.Debugf("LOGGER DEBUG")
+
+
+func check(err error) bool {
+	if err == nil {
+		return false
+	}
+	s := err.Error()
+	// ignore some errors
+	if s == "redis: nil" || s == "EOF" {
+		return false
+	}
+	log.Print(s)
+	return true
+}
