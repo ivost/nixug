@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/ivost/nix_users/internal/config"
-	"github.com/ivost/nix_users/internal/handlers"
-	"github.com/ivost/nix_users/internal/services"
+	"github.com/ivost/nixug/internal/config"
+	"github.com/ivost/nixug/internal/handlers"
+	"github.com/ivost/nixug/internal/services"
 	"github.com/labstack/echo/v4"
 	"os"
 	//"github.com/labstack/gommon/log"
@@ -14,20 +14,19 @@ import (
 const SigningSecretKey = "nix"
 
 const (
-	VERSION = "v0.5.17.0"
+	VERSION = "v0.5.19.0"
 )
 
 func main() {
 	log.Printf("nixug %v\n", VERSION)
 
-	cfg, err := config.InitConfig()
-	_ = cfg
+	cfg, err := config.NewConfig(config.DefaultConfigFile)
 	exitOnErr(err)
 
-	gs, err := initGroups(cfg)
-	exitOnErr(err)
+	//gs, err := initGroups()
+	//exitOnErr(err)
 
-	e, err := initEcho(cfg, gs)
+	e, err := initEcho()
 	exitOnErr(err)
 
 	err = initRouting(e)
@@ -39,13 +38,12 @@ func main() {
 	log.Printf("server exit: %v", err.Error())
 }
 
-func initGroups(cfg *config.Config) (*services.GroupService, error) {
-
-	return services.NewGroupService(cfg)
+func initGroups() (*services.GroupService, error) {
+	return services.NewGroupService()
 }
 
 
-func initEcho(c *config.Config, gs *services.GroupService) (*echo.Echo, error) {
+func initEcho() (*echo.Echo, error) {
 	// new echo instance
 	e := echo.New()
 	e.HideBanner = true
@@ -56,7 +54,7 @@ func initEcho(c *config.Config, gs *services.GroupService) (*echo.Echo, error) {
 	// convert echo context to our context - make available in middleware
 	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			cc := &handlers.Context{Context: c, GroupSvc: gs}
+			cc := &handlers.Context{Context: c}
 			return h(cc)
 		}
 	})
@@ -108,7 +106,7 @@ func initRouting(e *echo.Echo) error {
 	// metadata routes
 	groups := e.Group("/groups")
 
-	groups.GET("", handlers.GetGroupsAll)
+	groups.GET("", handlers.GetAllGroups)
 
 	//v1groups.GET("/:t/:id", handlers.GetGroup, jwt)
 

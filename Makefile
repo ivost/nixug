@@ -5,7 +5,7 @@ STYLE1=monokai
 SRCDIRS := ./...
 
 #MOD="-mod=readonly"
-MOD=""
+MOD=
 
 PKGS := $(shell go list -mod=readonly ./...)
 
@@ -38,7 +38,7 @@ test: install
 	go test $(MOD) ./...
 
 testv: install
-	go test $MOD ./... -v
+	go test $(MOD) ./... -v
 
 test-race: | test
 	go test -race $(MOD) ./...

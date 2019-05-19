@@ -23,18 +23,21 @@ type Config struct {
 	GroupFile string `json:"GroupFile"`
 }
 
-func InitConfig() (*Config, error) {
-	return ReadConfig(DefaultConfigFile)
+func NewConfig(configFile string) (*Config, error) {
+	if len(configFile) == 0 {
+		return NewDefaultConfig(), nil
+	}
+	return ReadConfig(configFile)
+}
+
+func NewDefaultConfig() *Config {
+	return &Config{Host: "0.0.0.0", Port: 8080, UserFile: DefaultUserFile, GroupFile: DefaultGroupFile}
 }
 
 func ReadConfig(configFile string) (*Config, error) {
-	// default config file
-	if len(configFile) == 0 {
-		configFile = DefaultConfigFile
-	}
 	d, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		configFile = DefaultConfigFile
+		return nil, err
 	}
 	//log.Printf("Reading config file %v", configFile)
 	d, err = ioutil.ReadFile(configFile)
@@ -43,10 +46,7 @@ func ReadConfig(configFile string) (*Config, error) {
 	}
 	c := new(Config)
 	err = json.Unmarshal(d, c)
-	if err != nil {
-		return nil, err
-	}
-	return c, nil
+	return c, err
 }
 
 func (c Config) GetHostPort() string {

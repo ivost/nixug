@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/ivost/nix_users/internal/models"
+	"github.com/ivost/nixug/internal/models"
 	"log"
 	"reflect"
 )

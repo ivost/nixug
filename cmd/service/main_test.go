@@ -1,12 +1,12 @@
 package main
 
 import (
-	//"github.com/ivost/nix_users/internal/test"
+	//"github.com/ivost/nixug/internal/test"
 	//"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func TestInitRedis(t *testing.T) {
+func TestSomething(t *testing.T) {
 	//log.Printf("main_test")
 	//cfg := test.NewConfig()
 

@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/ivost/nix_users/internal/models"
+	"github.com/ivost/nixug/internal/models"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"

@@ -1,7 +1,7 @@
 package models
 
 type Group struct {
-	GID     int64    `json:"gid"`
+	GID     int32    `json:"gid"`
 	Name    string   `json:"name"`
 	Members []string `json:"members"`
 }

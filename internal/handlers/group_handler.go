@@ -1,8 +1,7 @@
 package handlers
 
 import (
-	"fmt"
-	"github.com/ivost/nix_users/internal/models"
+	"github.com/ivost/nixug/internal/models"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -16,17 +15,22 @@ func GetGroup(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, v, "    ")
 }
 
-func GetGroupsAll(c echo.Context) error {
+func GetAllGroups(c echo.Context) error {
 	srv := c.(*Context).GroupService()
-	v := srv.GetGroupsAll()
+	v := srv.FindGroups(nil)
 	return c.JSONPretty(http.StatusOK, v, "    ")
 }
 
-func GetById(c echo.Context) *models.Group {
-	t := c.Param("t")
-	i := c.Param("id")
-	id := fmt.Sprintf("%v/%v", t, i)
+func GetById(c echo.Context) error {
+	//i := c.Param("id")
+	//id := fmt.Sprintf("%v/%v", t, i)
 	//log.Printf("GetById %v", id)
 	srv := c.(*Context).GroupService()
-	return srv.GetGroup(id)
+	//todo - id int32 from path
+	x := &models.Group{GID: 1}
+	g := srv.FindGroups(x)
+	if len(g) == 0 {
+		return c.NoContent(http.StatusNotFound)
+	}
+	return c.JSONPretty(http.StatusOK, g[0], "    ")
 }

@@ -1,18 +1,14 @@
 package test
 
-import (
-	"github.com/ivost/nix_users/internal/config"
-)
-
 const MetaId1 = "stream/cam1"
 const MetaId2 = "string/cam1"
 
-func NewConfig() *config.Config {
-	host := "0.0.0.0"
-	c := new (config.Config)
-	c.Listener = config.Listener {Addr: host, Port: 8484}
-	return c
-}
+//func NewConfig() *config.Config {
+//	host := "0.0.0.0"
+//	c := new (config.Config)
+//	c.Listener = config.Listener {Addr: host, Port: 8484}
+//	return c
+//}
 
 //func NewMetadata() models.Metadata {
 //	//map1 := models.Metadata{}

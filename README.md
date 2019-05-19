@@ -1,4 +1,4 @@
-## nix_users
+## nixug
 
 
 config file
@@ -40,7 +40,7 @@ go tool pprof http://localhost:6060/debug/pprof/trace?seconds=5
 go tool pprof http://localhost:6060/debug/pprof/heap
 
 
-nix_users -cpu prof-file
+nixug -cpu prof-file
 
 pprof -http localhost:8080 prof-file
 
