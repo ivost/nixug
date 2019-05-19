@@ -35,7 +35,7 @@ func Login(c echo.Context) error {
 		ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
 		//Subject:   id.Name,
 		//Id:        id.ID.String(),
-		Issuer:    "ivo",
+		Issuer: "ivo",
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

@@ -1,20 +1,30 @@
 package models
 
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
+
 type Group struct {
-	GID     int32    `json:"gid"`
+	GID     int      `json:"gid"`
 	Name    string   `json:"name"`
 	Members []string `json:"members"`
 }
 
-
-func (m *Group) Validate(i interface{}) error {
-
-	errs := new(RequestErrors)
-	if m.Name == "" {
-		errs.Append(ErrNameEmpty)
+func NewGroup(line string) (*Group, error) {
+	f := strings.Split(line, ":")
+	//adm:x:4:syslog,tap
+	if len(f) < 4 {
+		return nil, fmt.Errorf("invalid line %v", line)
 	}
-	if errs.Len() == 0 {
-		return nil
+	n, err := strconv.Atoi(f[2])
+	if err != nil {
+		return nil, err
 	}
-	return errs
+	g := &Group{Name: f[0], GID: n}
+	if len(f[3]) > 0 {
+		g.Members = strings.Split(f[3], ",")
+	}
+	return g, nil
 }

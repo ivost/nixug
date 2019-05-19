@@ -12,14 +12,13 @@ const (
 	DefaultGroupFile  = "/etc/group"
 )
 
-
 type Listener struct {
 }
 
 type Config struct {
-	Host string `json:"Host"`
-	Port int    `json:"Port"`
-	UserFile string  `json:"UserFile"`
+	Host      string `json:"Host"`
+	Port      int    `json:"Port"`
+	UserFile  string `json:"UserFile"`
 	GroupFile string `json:"GroupFile"`
 }
 

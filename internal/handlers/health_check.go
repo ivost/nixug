@@ -7,8 +7,7 @@ import (
 	"strings"
 )
 
-var filters = map[string]string{
-}
+var filters = map[string]string{}
 
 var sb = new(strings.Builder)
 
@@ -20,12 +19,11 @@ func HealthCheck(c echo.Context) error {
 	return c.String(http.StatusOK, sb.String())
 }
 
-
 func filterOut(s string) {
-	a := strings.Split(s,"\r\n")
+	a := strings.Split(s, "\r\n")
 	for _, l := range a {
 		//log.Printf(l)
-		ll := strings.Split(l,":")
+		ll := strings.Split(l, ":")
 		if len(ll) < 2 {
 			continue
 		}

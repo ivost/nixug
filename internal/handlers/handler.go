@@ -18,8 +18,8 @@ type Handler interface {
 }
 
 type handler struct {
-	context  *Context
-	lock     sync.RWMutex
+	context *Context
+	lock    sync.RWMutex
 }
 
 func (h *handler) PrepGet() (*models.ReadParam, error) {
@@ -44,8 +44,6 @@ func (h *handler) PrepGet() (*models.ReadParam, error) {
 //	return &rp, nil
 //}
 
-
-
 func DoGet(c echo.Context) error {
 	if h, err := requestCheck(c); err == nil {
 		return h.DoGet()
@@ -54,7 +52,6 @@ func DoGet(c echo.Context) error {
 	}
 }
 
-
 func requestCheck(c echo.Context) (Handler, error) {
 	//if h := pickHandler(c); h == nil {
 	//	return nil, c.JSON(http.StatusBadRequest, "no handler found")
@@ -62,7 +59,7 @@ func requestCheck(c echo.Context) (Handler, error) {
 	//	return nil, nil
 	//}
 
-		return nil, c.JSON(http.StatusBadRequest, "no handler found")
+	return nil, c.JSON(http.StatusBadRequest, "no handler found")
 
 }
 
@@ -84,7 +81,6 @@ func requestCheck(c echo.Context) (Handler, error) {
 //
 //	return nil
 //}
-
 
 func parseQuery(c echo.Context) models.ReadParam {
 	var rp models.ReadParam

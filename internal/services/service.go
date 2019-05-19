@@ -1,10 +1,35 @@
 package services
 
 import (
+	"bufio"
 	"github.com/ivost/nixug/internal/models"
 	"log"
+	"os"
 	"reflect"
+	"strings"
 )
+
+func readLines(fileName string) ([]string, error) {
+	file, err := os.Open(fileName)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+	var lines []string
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		line = strings.Trim(line, " \n")
+		if len(line) < 2 || strings.HasPrefix(line, "#") {
+			continue
+		}
+		lines = append(lines, line)
+	}
+	return lines, nil
+}
 
 //func prepareReadParam(m models.Group, rp models.ReadParam) models.ReadParam {
 //	//res := models.ReadParam{Start: rp.Start, End: rp.End, Limit: rp.Limit, Stream: rp.Stream}

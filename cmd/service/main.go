@@ -42,7 +42,6 @@ func initGroups() (*services.GroupService, error) {
 	return services.NewGroupService()
 }
 
-
 func initEcho() (*echo.Echo, error) {
 	// new echo instance
 	e := echo.New()

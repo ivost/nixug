@@ -11,8 +11,8 @@ type Context struct {
 	echo.Context
 	mu sync.RWMutex
 
-	m *models.Group
-	ct string
+	m   *models.Group
+	ct  string
 	err error
 
 	s *services.GroupService
@@ -27,7 +27,7 @@ func (c *Context) GroupService() *services.GroupService {
 	return c.s
 }
 
-func (c * Context) Valid() error {
+func (c *Context) Valid() error {
 	// todo
 	//t := c.Param("t")
 	//i := c.Param("id")

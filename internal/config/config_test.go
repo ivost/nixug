@@ -6,7 +6,6 @@ import (
 	"testing"
 )
 
-
 func TestConfig(t *testing.T) {
 	c, err := config.NewConfig("../../config.json")
 	assert.NoError(t, err)

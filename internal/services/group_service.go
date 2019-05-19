@@ -7,10 +7,9 @@ import (
 	"sync"
 )
 
-
 type GroupService struct {
-	groups map[int32]models.Group
-	mu sync.RWMutex
+	groups  map[int]models.Group
+	mu      sync.RWMutex
 	changed bool
 }
 
@@ -26,7 +25,7 @@ func (s *GroupService) loadGroups() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.groups == nil {
-		s.groups = make(map[int32]models.Group)
+		s.groups = make(map[int]models.Group)
 	} else {
 		// clear, avoid allocations
 		for k := range s.groups {
@@ -58,7 +57,7 @@ Example Query: ​GET /groups/query?member=_analyticsd&member=_networkd Example 
 [
 {“name”: “_analyticsusers”, “gid”: 250, “members”: [“_analyticsd’,”_networkd”,”_timed”]}
 ]
- */
+*/
 // FindGroups searches groups matching given example
 func (s *GroupService) FindGroups(example *models.Group) []models.Group {
 	s.mu.RLock()
@@ -74,7 +73,3 @@ func (s *GroupService) FindGroups(example *models.Group) []models.Group {
 	}
 	return res
 }
-
-
-
-

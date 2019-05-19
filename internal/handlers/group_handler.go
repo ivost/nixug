@@ -6,7 +6,6 @@ import (
 	"net/http"
 )
 
-
 func GetGroup(c echo.Context) error {
 	v := GetById(c)
 	if v == nil {
