@@ -32,13 +32,18 @@ func (ms *GroupService) GetGroup(id string) *models.Group {
 }
 
 func (ms *GroupService) GetGroupsAll() []models.Group {
-	res := make([]models.Group, 0)
+	groups := make([]models.Group, 0)
+
+	group := models.Group{GID:1, Name: "root"}
+
+	groups = append(groups, group)
+
 	//ms.metadata.M.Range(func(k, v interface{}) bool {
 	//	//fmt.Printf("GetMetaAll %+v=%+v\n", k, v)
 	//	res = append(res, v.(models.Group))
 	//	return true
 	//})
-	return res
+	return groups
 }
 
 

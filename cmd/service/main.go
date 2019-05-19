@@ -5,7 +5,6 @@ import (
 	"github.com/ivost/nix_users/internal/handlers"
 	"github.com/ivost/nix_users/internal/services"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"os"
 	//"github.com/labstack/gommon/log"
 	"log"
@@ -99,20 +98,17 @@ func exitOnErr(err error) bool {
 
 func initRouting(e *echo.Echo) error {
 	// Signing Key for our auth middleware
-	jwt := middleware.JWT(getSigningKey())
+	//jwt := middleware.JWT(getSigningKey())
 
 	e.GET("/health", handlers.HealthCheck)
 
-	// V1 Routes
-	v1 := e.Group("/v1")
-
 	// Authentication route
-	v1.GET("/auth/:key/:secret", handlers.Login)
+	e.GET("/auth/:key/:secret", handlers.Login)
 
 	// metadata routes
-	v1groups := v1.Group("/groups")
+	groups := e.Group("/groups")
 
-	v1groups.GET("/", handlers.GetGroupsAll)
+	groups.GET("", handlers.GetGroupsAll)
 
 	//v1groups.GET("/:t/:id", handlers.GetGroup, jwt)
 

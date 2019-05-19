@@ -1,30 +1,27 @@
 package handlers
 
 import (
-	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 )
 
-func TestGet(t *testing.T) {
+func TestHealth(t *testing.T) {
 	// Setup
-	//todo: redis init
-	e := echo.New()
-	req := httptest.NewRequest(http.MethodGet, "/health", nil)
-	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
-	c.SetPath("/health")
-	//c.SetParamNames("email")
-	//c.SetParamValues("jon@labstack.com")
-	err := HealthCheck(c)
-	// 	e.GET("/health", handlers.HealthCheck)
-	// Assertions
-	if assert.NoError(t, err) {
-		assert.Equal(t, http.StatusOK, rec.Code)
-	}
+	//e := echo.New()
+	//req := httptest.NewRequest(http.MethodGet, "/health", nil)
+	//rec := httptest.NewRecorder()
+	//c := e.NewContext(req, rec)
+	//c.SetPath("/health")
+	//err := HealthCheck(c)
+	//res := e.GET("/health", HealthCheck)
+	//log.Printf("%+v", res)
+	//// Assertions
+	//if assert.NoError(t, err) {
+	//	assert.Equal(t, http.StatusOK, rec.Code)
+	//}
 }
+
+//c.SetParamNames("email")
+//c.SetParamValues("jon@labstack.com")
 
 //func TestLoad(t *testing.T) {
 //	tests := map[string]struct {
