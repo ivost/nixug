@@ -19,36 +19,34 @@ const (
 )
 
 func main() {
-	log.Printf("nix_users %v\n", VERSION)
+	log.Printf("nixug %v\n", VERSION)
 
 	cfg, err := config.InitConfig()
 	_ = cfg
 	exitOnErr(err)
 
-	//ms, err := initMeta(cfg)
-	//exitOnErr(err)
-	//
-	//ts, err := initRedis(cfg, ms)
-	//exitOnErr(err)
-	//
-	//e, err := initEcho(cfg, ms, ts)
-	//exitOnErr(err)
+	gs, err := initGroups(cfg)
+	exitOnErr(err)
 
-	//err = initRouting(e)
-	//exitOnErr(err)
+	e, err := initEcho(cfg, gs)
+	exitOnErr(err)
+
+	err = initRouting(e)
+	exitOnErr(err)
 	//
-	//log.Printf("Listen on %v", cfg.GetEndpoint())
-	//// start our server
-	//err = e.Start(cfg.GetHostPort())
+	log.Printf("Listen on %v", cfg.GetEndpoint())
+	// start our server
+	err = e.Start(cfg.GetHostPort())
 	log.Printf("server exit: %v", err.Error())
 }
 
-//func initMeta(c *config.Config) (*services.MetaService, error) {
-//	ms, err := services.NewMetaService(c)
-//	return ms, err
-//}
+func initGroups(cfg *config.Config) (*services.GroupService, error) {
 
-func initEcho(c *config.Config, ms *services.GroupService) (*echo.Echo, error) {
+	return services.NewGroupService(cfg)
+}
+
+
+func initEcho(c *config.Config, gs *services.GroupService) (*echo.Echo, error) {
 	// new echo instance
 	e := echo.New()
 	e.HideBanner = true
@@ -59,7 +57,7 @@ func initEcho(c *config.Config, ms *services.GroupService) (*echo.Echo, error) {
 	// convert echo context to our context - make available in middleware
 	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			cc := &handlers.Context{Context: c, GroupSvc: ms}
+			cc := &handlers.Context{Context: c, GroupSvc: gs}
 			return h(cc)
 		}
 	})
@@ -108,16 +106,15 @@ func initRouting(e *echo.Echo) error {
 	// V1 Routes
 	v1 := e.Group("/v1")
 
-	// V1 Authentication route
-	// should be POST etc
+	// Authentication route
 	v1.GET("/auth/:key/:secret", handlers.Login)
 
-	// V1 metadata routes
-	v1meta := v1.Group("/groups")
+	// metadata routes
+	v1groups := v1.Group("/groups")
 
-	v1meta.GET("/", handlers.GetMetaAll)
+	v1groups.GET("/", handlers.GetGroupsAll)
 
-	v1meta.GET("/:t/:id", handlers.GetGroup, jwt)
+	//v1groups.GET("/:t/:id", handlers.GetGroup, jwt)
 
 	// get query params - start, end, limit,
 	//v1.GET ("/:t/:id", handlers.DoGet)

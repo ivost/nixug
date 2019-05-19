@@ -1,22 +1,19 @@
-PROJECT = nix_users
+PROJECT = nixug
 
 STYLE1=monokai
 
 SRCDIRS := ./...
 
+#MOD="-mod=readonly"
+MOD=""
+
 PKGS := $(shell go list -mod=readonly ./...)
 
-HP := 0.0.0.0:8484
-V1 := $(HP)/v1
-META := $(V1)/meta
+HP := 0.0.0.0:8080
+G := $(V1)/meta
 
 HTTP=http --style=$(STYLE1)
-AUTH=--auth-type=jwt --auth=$(shell http localhost:8484/v1/auth/tap/T@p)
-
-#S := 1556218054463
-S := 1556315241286
-E :=
-L := 10
+AUTH=--auth-type=jwt --auth=$(shell http localhost:8484/v1/auth/nix/nix)
 
 ID1=users/1
 ID2=users/2
@@ -33,18 +30,18 @@ run:
 
 help:
 	@echo h     - health check
-	@echo getu  - get user
-	@echo getg  - get group
+	@echo getu  - get users
+	@echo getg  - get groups
 	@echo ---
 
 test: install
-	go test -mod=readonly ./...
+	go test $(MOD) ./...
 
 testv: install
-	go test -mod=readonly ./... -v
+	go test $MOD ./... -v
 
 test-race: | test
-	go test -race -mod=readonly ./...
+	go test -race $(MOD) ./...
 
 vet: | test
 	go vet ./...
@@ -55,9 +52,9 @@ fmt:
 check: test test-race vet gofmt
 
 install:
-	@#go install -mod=readonly -v -tags "" ./...
+	@#go install $(MOD) -v -tags "" ./...
 	go mod tidy
-	go install -mod=readonly -v  ./...
+	go install $(MOD) -v  ./...
 
 download:
 	go mod download
@@ -82,6 +79,6 @@ errcheck:
 h:
 	$(HTTP) $(HP)/health
 
-getu:
-	$(HTTP) $(META)/
+getg:
+	$(HTTP) $(HP)/groups
 

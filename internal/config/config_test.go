@@ -14,7 +14,7 @@ func TestConfig(t *testing.T) {
 		want  *config.Config
 	}{
 		"good": {
-			input: config.ConfigFile,
+			input: config.DefaultConfigFile,
 			want: test.NewConfig(),
 		},
 	}
