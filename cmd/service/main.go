@@ -107,7 +107,7 @@ func initRouting(e *echo.Echo) error {
 
 	groups.GET("/:id", handlers.GetGroupById)
 
-	groups.GET("/:id", handlers.SearchGroups)
+	groups.GET("/query", handlers.SearchGroups)
 
 	return nil
 }

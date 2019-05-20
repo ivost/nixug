@@ -4,6 +4,7 @@ import (
 	"github.com/ivost/nixug/internal/models"
 	"github.com/ivost/nixug/internal/services"
 	"github.com/labstack/echo/v4"
+	"log"
 	"net/http"
 )
 
@@ -60,7 +61,7 @@ func groupFromQuery(c echo.Context) *models.Group {
 	g.GID = intQueryParam(c, Gid)
 	g.Name = strQueryParam(c, Name)
 	g.Members = strQueryArray(c, Member)
-
+	log.Printf("example %+v", g)
 	if g.GID == -1 && len(g.Name) == 0 && len(g.Members) == 0 {
 		return nil
 	}

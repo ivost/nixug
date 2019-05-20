@@ -17,17 +17,17 @@ func TestNewGroupService(t *testing.T) {
 }
 
 func TestGroupByIdName(t *testing.T) {
-	// func groupByIdName(example *models.Group, groups []models.Group ) []models.Group {
+	// func groupsByIdName(example *models.Group, groups []models.Group ) []models.Group {
 	var match []models.Group
 
 	// 2 groups to test - adm and root
 	groups := test.NewTestGroups()
-	match = groupByIdName(nil, groups)
+	match = groupsByIdName(nil, groups)
 	assert.Equal(t, len(match), len(groups))
 
 	ex := models.Group{GID: 0}
 	//curry
-	assertLen := func(l int) { assert.Equal(t, l, len(groupByIdName(&ex, groups))) }
+	assertLen := func(l int) { assert.Equal(t, l, len(groupsByIdName(&ex, groups))) }
 
 	assertLen(1)
 

@@ -42,10 +42,12 @@ func (s *GroupService) loadGroups(fileName string) error {
 		}
 		list = append(list, *g)
 	}
+
 	//sort by name to enable binary search
 	sort.Slice(list, func(i, j int) bool {
-		return list[i].Name > list[j].Name
+		return list[i].Name < list[j].Name
 	})
+
 	// write lock
 	s.mu.Lock()
 	s.groups = list
@@ -73,7 +75,7 @@ func (s *GroupService) FindGroups(example *models.Group) []models.Group {
 	if example == nil {
 		return s.groups
 	}
-	match := groupByIdName(example, s.groups)
+	match := groupsByIdName(example, s.groups)
 	// members?
 	if len(example.Members) == 0 {
 		return match
@@ -91,9 +93,9 @@ func (s *GroupService) FindGroups(example *models.Group) []models.Group {
 	return res
 }
 
-// groupByIdName matches groups given example group with id and/or name
+// groupsByIdName matches groups given example group with id and/or name
 // id -1 means no check
-func groupByIdName(example *models.Group, groups []models.Group) []models.Group {
+func groupsByIdName(example *models.Group, groups []models.Group) []models.Group {
 	if example == nil {
 		return groups
 	}
@@ -101,11 +103,12 @@ func groupByIdName(example *models.Group, groups []models.Group) []models.Group 
 	id := example.GID
 	// binary search by name
 	if len(example.Name) > 0 {
+
 		i := sort.Search(len(groups),
 			func(i int) bool { return groups[i].Name >= example.Name })
+
 		if i < len(groups) && groups[i].Name == example.Name {
 			g := groups[i]
-			//log.Printf("found %v at index %d\n", g, i)
 			// it is possible to have duplicate group names and ids -
 			// but we won't bother as it is border case
 			if id < 0 || id == g.GID {
