@@ -2,10 +2,9 @@ package services
 
 import (
 	"bufio"
-	"github.com/ivost/nixug/internal/models"
+	"github.com/fsnotify/fsnotify"
 	"log"
 	"os"
-	"reflect"
 	"strings"
 )
 
@@ -49,62 +48,40 @@ func readLines(fileName string) ([]string, error) {
 	return lines, nil
 }
 
-//func prepareReadParam(m models.Group, rp models.ReadParam) models.ReadParam {
-//	//res := models.ReadParam{Start: rp.Start, End: rp.End, Limit: rp.Limit, Stream: rp.Stream}
-//	//if len(rp.Start) == 0 {
-//	//	res.Start = "-"
-//	//}
-//	//if len(rp.End) == 0 {
-//	//	res.End = "+"
-//	//}
-//	//if rp.Limit <= 0 {
-//	//	res.Limit = m.Cap
-//	//}
-//	//return res
-//}
+func watch(path string, mod chan string) {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer watcher.Close()
 
-// reflection copy, omit "" and 0 from source
-func copyFields(src *models.Group, dst *models.Group) {
-	s := reflect.ValueOf(src).Elem()
-	//st := s.Type()
-
-	d := reflect.ValueOf(dst).Elem()
-	dt := d.Type()
-
-	for i := 0; i < s.NumField(); i++ {
-		sf := s.Field(i)
-		sfv := sf.Interface()
-
-		df := d.FieldByName(dt.Field(i).Name)
-
-		if sf.IsValid() && df.IsValid() {
-			// A Value can be changed only if it is
-			// addressable and was not obtained by
-			// the use of unexported struct fields.
-			if !df.CanSet() {
-				continue
-			}
-			switch df.Kind() {
-			case reflect.String:
-				// update dst only if src is not empty
-				str := sfv.(string)
-				if len(str) > 0 {
-					df.SetString(str)
+	done := make(chan bool)
+	go func() {
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				//log.Printf("event %v", event)
+				if !ok {
+					mod <- "error:"
+					return
 				}
-			case reflect.Int64:
-				// update dst only if src is not 0
-				nv := sfv.(int64)
-				if nv != 0 {
-					df.SetInt(nv)
+				if event.Op & fsnotify.Write == fsnotify.Write {
+					mod <- "modified:" + event.Name
 				}
-			case reflect.Bool:
-				df.SetBool(sfv.(bool))
-			default:
-				log.Printf("TODO %v", df.Kind())
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					mod <- "error:" + err.Error()
+					return
+				}
 			}
 		}
+	}()
 
+	err = watcher.Add(path)
+	if err != nil {
+		log.Fatal(err)
 	}
+	<-done
 }
 
 func check(err error) bool {
