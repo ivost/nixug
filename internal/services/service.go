@@ -9,6 +9,25 @@ import (
 	"strings"
 )
 
+func containsAll(haystack []string, needles []string) bool {
+	for _, n := range needles {
+		if !contains(haystack, n) {
+			return false
+		}
+	}
+	return true
+}
+
+func contains(haystack []string, needle string) bool {
+	for _, s := range haystack {
+		if s == needle {
+			return true
+		}
+	}
+	return false
+}
+
+
 func readLines(fileName string) ([]string, error) {
 	file, err := os.Open(fileName)
 	if err != nil {

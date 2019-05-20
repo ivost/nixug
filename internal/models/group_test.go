@@ -53,18 +53,3 @@ func TestNewGroup(t *testing.T) {
 		})
 	}
 }
-
-//func TestCopy(t *testing.T) {
-//	src := models.Group{Id: test.MetaId1, Name: "bar",  TTL: "1001m"}
-//	dst := models.Group{Id: test.MetaId1, Name: "foo",  Cap: 101}
-//	// reflection copy, omit "" and 0 from source
-//	copyFields(&src, &dst)
-//	//log.Printf("src %+v", src)
-//	//log.Printf("dst %+v", dst)
-//
-//	assert.Equal(t, test.MetaId1, dst.Id)
-//	assert.Equal(t, src.Name, dst.Name)
-//	assert.EqualValues(t, 101, dst.Cap)
-//	assert.EqualValues(t, "1001m", dst.TTL)
-//}
-//
