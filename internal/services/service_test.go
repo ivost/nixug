@@ -16,15 +16,15 @@ func TestReadLines(t *testing.T) {
 }
 
 func TestContains(t *testing.T) {
-	haystack := []string {"foo", "bar"}
+	haystack := []string{"foo", "bar"}
 	assert.True(t, contains(haystack, "foo"))
 	assert.True(t, contains(haystack, "bar"))
 	assert.False(t, contains(haystack, "baz"))
 }
 
 func TestContainsAll(t *testing.T) {
-	haystack := []string {"foo", "bar", "baz"}
-	needles := []string {"foo", "bar"}
+	haystack := []string{"foo", "bar", "baz"}
+	needles := []string{"foo", "bar"}
 	assert.True(t, containsAll(haystack, needles))
 	needles = append(needles, "boo")
 	assert.False(t, containsAll(haystack, needles))

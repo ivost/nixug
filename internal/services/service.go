@@ -27,7 +27,6 @@ func contains(haystack []string, needle string) bool {
 	return false
 }
 
-
 func readLines(fileName string) ([]string, error) {
 	file, err := os.Open(fileName)
 	if err != nil {

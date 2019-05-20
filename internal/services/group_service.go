@@ -12,7 +12,7 @@ type GroupService struct {
 	groups  []models.Group
 	mu      sync.RWMutex
 	changed bool
-	cfg 	*config.Config
+	cfg     *config.Config
 }
 
 func NewGroupService() (*GroupService, error) {
@@ -21,7 +21,7 @@ func NewGroupService() (*GroupService, error) {
 		return nil, err
 	}
 	s := &GroupService{
-		cfg: c,
+		cfg:     c,
 		changed: true,
 	}
 	err = s.loadGroups(s.cfg.GroupFile)
@@ -55,21 +55,6 @@ func (s *GroupService) loadGroups(fileName string) error {
 	return nil
 }
 
-/*
-GET /groups/query[?name=<nq>][&gid=<gq>][&member=<mq1>[&member=<mq2>][&. ..]]
-Return a list of groups matching all of the specified query fields.
-The bracket notation indicates that any of the following query parameters may be supplied:
-- name
-- gid
-- member (repeated)
-Any group containing all the specified members should be returned,
-i.e. when query members are a subset of group members.
-Example Query: ​GET /groups/query?member=_analyticsd&member=_networkd
-Example Response:
-[
-{“name”: “_analyticsusers”, “gid”: 250, “members”: [“_analyticsd’,”_networkd”,”_timed”]}
-]
-*/
 // FindGroups searches groups matching given example
 // if example is nil - all groups are returned
 // if id is > 0 - matching GID only, otherwise - do not check GID
@@ -108,7 +93,7 @@ func (s *GroupService) FindGroups(example *models.Group) []models.Group {
 
 // groupByIdName matches groups given example group with id and/or name
 // id -1 means no check
-func groupByIdName(example *models.Group, groups []models.Group ) []models.Group {
+func groupByIdName(example *models.Group, groups []models.Group) []models.Group {
 	if example == nil {
 		return groups
 	}

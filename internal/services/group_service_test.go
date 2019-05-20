@@ -7,7 +7,6 @@ import (
 	"testing"
 )
 
-
 func TestNewGroupService(t *testing.T) {
 	// should load /etc/group when created
 	s, err := NewGroupService()
@@ -26,9 +25,9 @@ func TestGroupByIdName(t *testing.T) {
 	match = groupByIdName(nil, groups)
 	assert.Equal(t, len(match), len(groups))
 
-	ex := models.Group{GID:0}
+	ex := models.Group{GID: 0}
 	//curry
-	assertLen := func (l int) { assert.Equal(t, l, len(groupByIdName(&ex, groups))) }
+	assertLen := func(l int) { assert.Equal(t, l, len(groupByIdName(&ex, groups))) }
 
 	assertLen(1)
 
@@ -52,7 +51,6 @@ func TestGroupByIdName(t *testing.T) {
 	assertLen(0)
 }
 
-
 func TestFindGroups(t *testing.T) {
 	s, _ := NewGroupService()
 	s.groups = test.NewTestGroups()
@@ -60,10 +58,10 @@ func TestFindGroups(t *testing.T) {
 	match := s.FindGroups(nil)
 	assert.Equal(t, len(s.groups), len(match))
 
-	ex := models.Group{GID:0}
+	ex := models.Group{GID: 0}
 
 	// closure
-	assertLen := func (l int) { assert.Equal(t, l, len(s.FindGroups(&ex))) }
+	assertLen := func(l int) { assert.Equal(t, l, len(s.FindGroups(&ex))) }
 
 	ex.GID = -1
 	ex.Name = "adm"

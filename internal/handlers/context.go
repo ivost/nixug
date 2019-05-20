@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"github.com/ivost/nixug/internal/models"
 	"github.com/ivost/nixug/internal/services"
 	"github.com/labstack/echo/v4"
 	"sync"
@@ -11,8 +10,8 @@ type Context struct {
 	echo.Context
 	mu sync.RWMutex
 
-	m   *models.Group
-	ct  string
+	//m   *models.Group
+	//ct  string
 	err error
 
 	s *services.GroupService

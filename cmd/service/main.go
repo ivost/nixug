@@ -47,9 +47,6 @@ func initEcho() (*echo.Echo, error) {
 	e := echo.New()
 	e.HideBanner = true
 
-	//todo: custom validator
-	//e.Validator = new(models.Group)
-
 	// convert echo context to our context - make available in middleware
 	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -100,17 +97,17 @@ func initRouting(e *echo.Echo) error {
 	e.GET("/health", handlers.HealthCheck)
 
 	// Authentication route
+	// use nix / nix
 	e.GET("/auth/:key/:secret", handlers.Login)
 
-	// metadata routes
+	// groups routes
 	groups := e.Group("/groups")
 
 	groups.GET("", handlers.GetAllGroups)
 
-	//v1groups.GET("/:t/:id", handlers.GetGroup, jwt)
+	groups.GET("/:id", handlers.GetGroupById)
 
-	// get query params - start, end, limit,
-	//v1.GET ("/:t/:id", handlers.DoGet)
+	groups.GET("/:id", handlers.SearchGroups)
 
 	return nil
 }

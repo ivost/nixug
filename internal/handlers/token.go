@@ -2,30 +2,32 @@ package handlers
 
 import (
 	"github.com/dgrijalva/jwt-go"
+	"github.com/ivost/nixug/internal/models"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"time"
 )
 
 const (
-	SigningContextKey = "signing-tap_context"
+	SigningContextKey = "sign_context"
 )
 
 // Login - Login Handler will take a username and password from the request
 // hash the password, verify it matches in the database and respond with a token
 func Login(c echo.Context) error {
 
-	//key := c.Param("key")
-	//secret := c.Param("secret")
+	key := c.Param("key")
+	secret := c.Param("secret")
 
-	//id, err := models.GetIdentity(key)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//if err := bcrypt.CompareHashAndPassword(id.Hash, []byte(secret)); err != nil {
-	//	return c.String(http.StatusUnauthorized, "auth error")
-	//}
+	id, err := models.GetIdentity(key)
+	if err != nil {
+		return err
+	}
+
+	if err := bcrypt.CompareHashAndPassword(id.Hash, []byte(secret)); err != nil {
+		return c.String(http.StatusUnauthorized, "auth error")
+	}
 
 	// generate JWT
 	signingKey := c.Get(SigningContextKey).([]byte)

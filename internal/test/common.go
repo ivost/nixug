@@ -6,7 +6,7 @@ import (
 
 func NewTestGroups() []models.Group {
 	// must be sorted by name
-	g := []models.Group {
+	g := []models.Group{
 		{Name: "adm", GID: 4, Members: []string{"syslog", "foo"}},
 		{Name: "log", GID: 42, Members: []string{"foo", "bar"}},
 		{Name: "root", GID: 0},
