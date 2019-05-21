@@ -1,3 +1,4 @@
+// Package models contains domain objects
 package models
 
 import (

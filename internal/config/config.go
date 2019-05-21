@@ -1,3 +1,4 @@
+// Package config deals with configuration
 package config
 
 import (
@@ -35,11 +36,6 @@ func NewDefaultConfig() *Config {
 
 func ReadConfig(configFile string) (*Config, error) {
 	d, err := ioutil.ReadFile(configFile)
-	if err != nil {
-		return nil, err
-	}
-	//log.Printf("Reading config file %v", configFile)
-	d, err = ioutil.ReadFile(configFile)
 	if err != nil {
 		return nil, err
 	}

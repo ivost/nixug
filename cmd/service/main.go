@@ -25,18 +25,16 @@ func main() {
 	gs, err := services.NewGroupService(cfg)
 	exitOnErr(err)
 
-	e, err := initEcho(gs)
+	e := initEcho(gs)
 	exitOnErr(err)
 
-	err = initRouting(e)
-	exitOnErr(err)
+	initRouting(e)
 	// start our server
 	err = e.Start(cfg.GetHostPort())
 	log.Printf("server exit: %v", err.Error())
 }
 
-
-func initEcho(groupSvc *services.GroupService) (*echo.Echo, error) {
+func initEcho(groupSvc *services.GroupService) *echo.Echo {
 	// new echo instance
 	e := echo.New()
 	e.HideBanner = true
@@ -58,33 +56,32 @@ func initEcho(groupSvc *services.GroupService) (*echo.Echo, error) {
 		}
 	})
 
-	return e, nil
+	return e
 }
 
 func getSigningKey() []byte {
 	return []byte(SigningSecretKey)
 }
 
-func check(err error) bool {
-	if err == nil {
-		return false
-	}
-	s := err.Error()
-	log.Print(s)
-	return true
-}
+//func check(err error) bool {
+//	if err == nil {
+//		return false
+//	}
+//	s := err.Error()
+//	log.Print(s)
+//	return true
+//}
 
-func exitOnErr(err error) bool {
+func exitOnErr(err error) {
 	if err == nil {
-		return false
+		return
 	}
 	s := err.Error()
 	log.Print(s)
 	os.Exit(1)
-	return true
 }
 
-func initRouting(e *echo.Echo) error {
+func initRouting(e *echo.Echo) {
 	// Signing Key for our auth middleware
 	//jwt := middleware.JWT(getSigningKey())
 
@@ -99,6 +96,4 @@ func initRouting(e *echo.Echo) error {
 	groups.GET("", handlers.GetAllGroups)
 	groups.GET("/:gid", handlers.GetGroupById)
 	groups.GET("/query", handlers.SearchGroups)
-
-	return nil
 }

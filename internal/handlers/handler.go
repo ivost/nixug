@@ -2,9 +2,7 @@ package handlers
 
 import (
 	"github.com/labstack/echo/v4"
-	"log"
 	"strconv"
-	"sync"
 )
 
 const (
@@ -24,10 +22,10 @@ type Handler interface {
 	//DoDelete() error
 }
 
-type handler struct {
-	context *Context
-	lock    sync.RWMutex
-}
+//type handler struct {
+//	context *Context
+//	lock    sync.RWMutex
+//}
 
 //func (h *handler) PrepGet() (*models.ReadParam, error) {
 //	c := h.context
@@ -85,10 +83,10 @@ func intQueryParam(c echo.Context, name string) int {
 	return n
 }
 
-func check(err error) bool {
-	if err == nil {
-		return false
-	}
-	log.Print(err.Error())
-	return true
-}
+//func check(err error) bool {
+//	if err == nil {
+//		return false
+//	}
+//	log.Print(err.Error())
+//	return true
+//}

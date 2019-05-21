@@ -49,7 +49,7 @@ vet: | test
 fmt:
 	go fmt ./...
 
-check: test test-race vet gofmt
+check: test test-race vet fmt
 
 install:
 	@#go install $(MOD) -v -tags "" ./...
@@ -60,10 +60,11 @@ download:
 	go mod download
 
 
-staticcheck:
+scheck:
+	@echo static analysis
 	go install honnef.co/go/tools/cmd/staticcheck
 	staticcheck \
-		-checks all,-ST1003 \
+		-checks all,-ST1003,-S1011 \
 		$(PKGS)
 
 pedantic: check unparam errcheck

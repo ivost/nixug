@@ -1,15 +1,17 @@
+// Package handlers contains REST handlers
+// It deals with handling htpp requests
+// business logic is in services
 package handlers
 
 import (
 	"github.com/ivost/nixug/internal/services"
 	"github.com/labstack/echo/v4"
-	"sync"
 )
 
 type Context struct {
 	echo.Context
-	mu  sync.RWMutex
-	err error
+	//mu       sync.RWMutex
+	//err      error
 	GroupSvc *services.GroupService
 }
 

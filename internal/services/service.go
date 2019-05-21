@@ -1,3 +1,4 @@
+// Package services contains the business logic and services
 package services
 
 import (
@@ -48,25 +49,15 @@ func readLines(fileName string) ([]string, error) {
 	return lines, nil
 }
 
-func watch(path string, changed *bool) error {
+func newWatcher(path string) (*fsnotify.Watcher, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if check(err) {
-		return err
+		return nil, err
 	}
-	defer watcher.Close()
-	err = watcher.Add(path)
-	if check(err) {
-		return err
+	if err = watcher.Add(path); check(err) {
+		return nil, err
 	}
-	for {
-		select {
-		case event, ok := <-watcher.Events:
-			//log.Printf("event %v", event)
-			if ok && event.Op&fsnotify.Write == fsnotify.Write {
-				*changed = true
-			}
-		}
-	}
+	return watcher, nil
 }
 
 func check(err error) bool {

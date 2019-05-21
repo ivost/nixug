@@ -1,10 +1,30 @@
+// Package test contains helpers used by unit tests
 package test
 
 import (
 	"github.com/ivost/nixug/internal/models"
 	"log"
 	"os"
+	"time"
 )
+
+// LimitedRun executes delegate for limited time and run count // done chan bool,
+func LimitedRun(maxSec int, maxCount int, delegate func()) {
+	start := time.Now()
+	maxNs := int64(maxSec) * int64(time.Second)
+	count := 0
+	for {
+		go delegate()
+		count++
+		if count >= maxCount {
+			break
+		}
+		if time.Since(start).Nanoseconds() >= maxNs {
+			break
+		}
+	}
+	//done <- true
+}
 
 // appendToFile If the file doesn't exist, create it, append to the file
 func AppendToFile(fileName string, data string) error {

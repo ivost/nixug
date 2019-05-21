@@ -1,6 +1,7 @@
 package services
 
 import (
+	"github.com/fsnotify/fsnotify"
 	"github.com/ivost/nixug/internal/config"
 	"github.com/ivost/nixug/internal/models"
 	"log"
@@ -11,18 +12,18 @@ import (
 type GroupService struct {
 	// groups can have duplicate ids and names
 	// so instead of map we'll use array
-	groups      []models.Group
-	cfg         *config.Config
-	mu          sync.RWMutex
-	fileChanges chan string
+	groups []models.Group
+	cfg    *config.Config
+	mu     sync.RWMutex
+	//fileChanges chan string
 	fileChanged bool
 }
 
 func NewGroupService(cfg *config.Config) (*GroupService, error) {
 	log.Printf("NewGroupService")
 	s := &GroupService{
-		cfg:         cfg,
-		fileChanges: make(chan string),
+		cfg: cfg,
+		//fileChanges: make(chan string),
 		fileChanged: true,
 	}
 	file := s.cfg.GroupFile
@@ -31,10 +32,21 @@ func NewGroupService(cfg *config.Config) (*GroupService, error) {
 	if check(err) {
 		return nil, err
 	}
-	// start watching for file changes
-	go watch(file, &s.fileChanged)
+	// watch for file changes
 	// we could reload the file on every change
 	// instead we just keep dirty flag and reload only when there is web request
+
+	watcher, err := newWatcher(file)
+	go func() {
+		for {
+			// set dirty flag on WRITE events
+			if event, ok := <-watcher.Events; ok && event.Op&fsnotify.Write == fsnotify.Write {
+				s.mu.Lock()
+				s.fileChanged = true
+				s.mu.Unlock()
+			}
+		}
+	}()
 	return s, err
 }
 
@@ -104,7 +116,8 @@ func (s *GroupService) loadIfDirty() {
 	s.mu.RLock()
 	if s.fileChanged {
 		s.mu.RUnlock()
-		s.loadGroups(s.cfg.GroupFile)
+		err := s.loadGroups(s.cfg.GroupFile)
+		check(err)
 	} else {
 		s.mu.RUnlock()
 	}
