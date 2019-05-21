@@ -1,6 +1,7 @@
 package services
 
 import (
+	"github.com/ivost/nixug/internal/config"
 	"github.com/ivost/nixug/internal/models"
 	"github.com/ivost/nixug/internal/test"
 	"github.com/stretchr/testify/assert"
@@ -9,7 +10,9 @@ import (
 
 func TestNewGroupService(t *testing.T) {
 	// should load /etc/group when created
-	s, err := NewGroupService()
+	cfg, err := config.NewConfig("test/" + config.DefaultConfigFile)
+	assert.NoError(t, err)
+	s, err := NewGroupService(cfg)
 	assert.NoError(t, err)
 	assert.NotNil(t, s)
 	assert.NotNil(t, s.groups)
@@ -52,7 +55,9 @@ func TestGroupByIdName(t *testing.T) {
 }
 
 func TestFindGroups(t *testing.T) {
-	s, _ := NewGroupService()
+	cfg, err := config.NewConfig("../../" + config.DefaultConfigFile)
+	assert.NoError(t, err)
+	s, _ := NewGroupService(cfg)
 	s.groups = test.NewTestGroups()
 
 	match := s.FindGroups(nil)

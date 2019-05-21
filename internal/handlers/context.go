@@ -8,33 +8,17 @@ import (
 
 type Context struct {
 	echo.Context
-	mu sync.RWMutex
-
-	//m   *models.Group
-	//ct  string
+	mu  sync.RWMutex
 	err error
-
-	s *services.GroupService
+	GroupSvc *services.GroupService
 }
 
-func (c *Context) GroupService() *services.GroupService {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if c.s == nil {
-		c.s, _ = services.NewGroupService()
-	}
-	return c.s
-}
-
-func (c *Context) Valid() error {
-	// todo
-	//t := c.Param("t")
-	//i := c.Param("id")
-	//id := fmt.Sprintf("%v/%v", t, i)
-	//
-	//c.m = c.GroupSvc.GetGroup(id)
-	//if c.m == nil {
-	//	return fmt.Errorf("id %v not found", id)
-	//}
-	return nil
-}
+//func (c *Context) NewGroupService() *services.GroupService {
+//	c.mu.Lock()
+//	defer c.mu.Unlock()
+//	if c.GroupSvc == nil {
+//		log.Printf("NewGroupService")
+//		c.GroupSvc, _ = services.NewGroupService()
+//	}
+//	return c.GroupSvc
+//}

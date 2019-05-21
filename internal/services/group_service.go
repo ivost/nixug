@@ -3,32 +3,43 @@ package services
 import (
 	"github.com/ivost/nixug/internal/config"
 	"github.com/ivost/nixug/internal/models"
+	"log"
 	"sort"
 	"sync"
 )
 
 type GroupService struct {
 	// groups can have duplicate ids and names
-	groups  []models.Group
-	mu      sync.RWMutex
-	changed bool
-	cfg     *config.Config
+	// so instead of map we'll use array
+	groups      []models.Group
+	cfg         *config.Config
+	mu          sync.RWMutex
+	fileChanges chan string
+	fileChanged bool
 }
 
-func NewGroupService() (*GroupService, error) {
-	c, err := config.NewConfig("")
-	if err != nil {
+func NewGroupService(cfg *config.Config) (*GroupService, error) {
+	log.Printf("NewGroupService")
+	s := &GroupService{
+		cfg:         cfg,
+		fileChanges: make(chan string),
+		fileChanged: true,
+	}
+	file := s.cfg.GroupFile
+	//log.Printf("group file: %v", file)
+	err := s.loadGroups(file)
+	if check(err) {
 		return nil, err
 	}
-	s := &GroupService{
-		cfg:     c,
-		changed: true,
-	}
-	err = s.loadGroups(s.cfg.GroupFile)
+	// start watching for file changes
+	go watch(file, &s.fileChanged)
+	// we could reload the file on every change
+	// instead we just keep dirty flag and reload only when there is web request
 	return s, err
 }
 
 func (s *GroupService) loadGroups(fileName string) error {
+	log.Printf("loadGroups: %v", fileName)
 	lines, err := readLines(fileName)
 	if err != nil {
 		return err
@@ -51,8 +62,8 @@ func (s *GroupService) loadGroups(fileName string) error {
 	// write lock
 	s.mu.Lock()
 	s.groups = list
-	// clear changed flag
-	s.changed = false
+	// clear fileChanged flag
+	s.fileChanged = false
 	s.mu.Unlock()
 	return nil
 }
@@ -61,12 +72,7 @@ func (s *GroupService) loadGroups(fileName string) error {
 // if example is nil - all groups are returned
 // if id is > 0 - matching GID only, otherwise - do not check GID
 func (s *GroupService) FindGroups(example *models.Group) []models.Group {
-	// read lock
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	if s.changed {
-		s.loadGroups(s.cfg.GroupFile)
-	}
+	s.loadIfDirty()
 	l := len(s.groups)
 	// sanity check
 	if l == 0 {
@@ -91,6 +97,17 @@ func (s *GroupService) FindGroups(example *models.Group) []models.Group {
 		}
 	}
 	return res
+}
+
+// reload group array if file has been modified
+func (s *GroupService) loadIfDirty() {
+	s.mu.RLock()
+	if s.fileChanged {
+		s.mu.RUnlock()
+		s.loadGroups(s.cfg.GroupFile)
+	} else {
+		s.mu.RUnlock()
+	}
 }
 
 // groupsByIdName matches groups given example group with id and/or name

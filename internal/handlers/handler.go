@@ -12,6 +12,7 @@ const (
 	Gid    = "gid"
 	Name   = "name"
 	Member = "member"
+	Indent = "  "
 )
 
 type Handler interface {

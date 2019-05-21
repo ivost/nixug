@@ -3,16 +3,13 @@ package services
 import (
 	"github.com/ivost/nixug/internal/test"
 	"github.com/stretchr/testify/assert"
-	"os"
 	"strconv"
-	"strings"
-	"sync/atomic"
 	"testing"
 	"time"
 )
 
 var (
-	testFile = "../../test/group"
+	testFile = "test/group"
 )
 
 func TestReadLines(t *testing.T) {
@@ -21,53 +18,26 @@ func TestReadLines(t *testing.T) {
 	assert.True(t, len(lines) > 0)
 }
 
-func TestWatch(t *testing.T) {
-	// file change notifications
-	note := make(chan string)
+// test file change notifications
+func TestFileWatch(t *testing.T) {
+	changed := false
 	file := "/tmp/foo.bar"
-	var count int32
-
 	write := func(n int) {
 		err := test.AppendToFile(file, strconv.Itoa(n))
 		if check(err) {
 			t.Fail()
 		}
-		time.Sleep(10*time.Millisecond)
+		time.Sleep(10 * time.Millisecond)
 	}
 
-	os.Remove(file)
 	write(0)
-
-	go watch(file, note)
+	// start watching
+	go watch(file, &changed)
 
 	write(1)
 	write(2)
 
-	start := time.Now()
-	maxDur := int64(2 * time.Second)
-	maxCount := int32(3)
-
-	readCount := func() int32 { return atomic.LoadInt32(&count) }
-	dur := func() int64 { return time.Now().Sub(start).Nanoseconds() }
-
-	// run for maxDur
-	for dur() < maxDur {
-		select {
-		case event := <-note:
-			//log.Printf("count %v, dur %v event %v ", readCount(), dur(), event)
-			if strings.HasPrefix(event,"modified:") {
-				if readCount() < maxCount {
-					write(int(readCount()))
-					atomic.AddInt32(&count,1)
-				}
-			}
-		default:
-		}
-		if readCount() >= maxCount {
-			break
-		}
-	}
-	assert.Equal(t, maxCount, readCount())
+	assert.True(t, changed)
 }
 
 func TestContains(t *testing.T) {

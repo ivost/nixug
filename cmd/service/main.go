@@ -5,16 +5,15 @@ import (
 	"github.com/ivost/nixug/internal/handlers"
 	"github.com/ivost/nixug/internal/services"
 	"github.com/labstack/echo/v4"
-	"os"
-	//"github.com/labstack/gommon/log"
 	"log"
+	"os"
 )
 
 //todo: read from env
 const SigningSecretKey = "nix"
 
 const (
-	VERSION = "v0.5.19.0"
+	VERSION = "v0.5.20.0"
 )
 
 func main() {
@@ -23,26 +22,21 @@ func main() {
 	cfg, err := config.NewConfig(config.DefaultConfigFile)
 	exitOnErr(err)
 
-	//gs, err := initGroups()
-	//exitOnErr(err)
+	gs, err := services.NewGroupService(cfg)
+	exitOnErr(err)
 
-	e, err := initEcho()
+	e, err := initEcho(gs)
 	exitOnErr(err)
 
 	err = initRouting(e)
 	exitOnErr(err)
-	//
-	log.Printf("Listen on %v", cfg.GetEndpoint())
 	// start our server
 	err = e.Start(cfg.GetHostPort())
 	log.Printf("server exit: %v", err.Error())
 }
 
-func initGroups() (*services.GroupService, error) {
-	return services.NewGroupService()
-}
 
-func initEcho() (*echo.Echo, error) {
+func initEcho(groupSvc *services.GroupService) (*echo.Echo, error) {
 	// new echo instance
 	e := echo.New()
 	e.HideBanner = true
@@ -50,7 +44,7 @@ func initEcho() (*echo.Echo, error) {
 	// convert echo context to our context - make available in middleware
 	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			cc := &handlers.Context{Context: c}
+			cc := &handlers.Context{Context: c, GroupSvc: groupSvc}
 			return h(cc)
 		}
 	})
@@ -97,16 +91,13 @@ func initRouting(e *echo.Echo) error {
 	e.GET("/health", handlers.HealthCheck)
 
 	// Authentication route
-	// use nix / nix
+	// use nix / nix to get auth.token
 	e.GET("/auth/:key/:secret", handlers.Login)
 
 	// groups routes
 	groups := e.Group("/groups")
-
 	groups.GET("", handlers.GetAllGroups)
-
-	groups.GET("/:id", handlers.GetGroupById)
-
+	groups.GET("/:gid", handlers.GetGroupById)
 	groups.GET("/query", handlers.SearchGroups)
 
 	return nil

@@ -4,7 +4,6 @@ import (
 	"github.com/ivost/nixug/internal/models"
 	"github.com/ivost/nixug/internal/services"
 	"github.com/labstack/echo/v4"
-	"log"
 	"net/http"
 )
 
@@ -34,26 +33,26 @@ Example Response:
 
 func GetAllGroups(c echo.Context) error {
 	v := groupService(c).FindGroups(nil)
-	return c.JSONPretty(http.StatusOK, v, "    ")
+	return c.JSONPretty(http.StatusOK, v, Indent)
 }
 
 func GetGroupById(c echo.Context) error {
-	ex := &models.Group{GID: intParam(c, Id)}
+	ex := &models.Group{GID: intParam(c, Gid)}
 	g := groupService(c).FindGroups(ex)
 	if len(g) == 0 {
 		return c.NoContent(http.StatusNotFound)
 	}
-	return c.JSONPretty(http.StatusOK, g[0], "    ")
+	return c.JSONPretty(http.StatusOK, g[0], Indent)
 }
 
 func SearchGroups(c echo.Context) error {
 	ex := groupFromQuery(c)
 	v := groupService(c).FindGroups(ex)
-	return c.JSONPretty(http.StatusOK, v, "    ")
+	return c.JSONPretty(http.StatusOK, v, Indent)
 }
 
 func groupService(c echo.Context) *services.GroupService {
-	return c.(*Context).GroupService()
+	return c.(*Context).GroupSvc
 }
 
 func groupFromQuery(c echo.Context) *models.Group {
@@ -61,7 +60,7 @@ func groupFromQuery(c echo.Context) *models.Group {
 	g.GID = intQueryParam(c, Gid)
 	g.Name = strQueryParam(c, Name)
 	g.Members = strQueryArray(c, Member)
-	log.Printf("example %+v", g)
+	//log.Printf("group example %+v", g)
 	if g.GID == -1 && len(g.Name) == 0 && len(g.Members) == 0 {
 		return nil
 	}

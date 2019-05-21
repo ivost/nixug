@@ -9,10 +9,6 @@ import (
 	"testing"
 )
 
-//q := make(url.Values)
-//q.Set("email", "jon@labstack.com")
-//req := httptest.NewRequest(http.MethodPost, "/?"+q.Encode(), nil)
-
 func TestGroupFromQuery(t *testing.T) {
 	// Setup
 	e := echo.New()
@@ -21,7 +17,6 @@ func TestGroupFromQuery(t *testing.T) {
 	q.Set("name", "foo")
 	q.Set("member", "a")
 	q.Add("member", "b")
-	//q.Set("members", "b" )
 	req := httptest.NewRequest(http.MethodGet, "/groups?"+q.Encode(), nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)

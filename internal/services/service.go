@@ -48,40 +48,25 @@ func readLines(fileName string) ([]string, error) {
 	return lines, nil
 }
 
-func watch(path string, mod chan string) {
+func watch(path string, changed *bool) error {
 	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Fatal(err)
+	if check(err) {
+		return err
 	}
 	defer watcher.Close()
-
-	done := make(chan bool)
-	go func() {
-		for {
-			select {
-			case event, ok := <-watcher.Events:
-				//log.Printf("event %v", event)
-				if !ok {
-					mod <- "error:"
-					return
-				}
-				if event.Op & fsnotify.Write == fsnotify.Write {
-					mod <- "modified:" + event.Name
-				}
-			case err, ok := <-watcher.Errors:
-				if !ok {
-					mod <- "error:" + err.Error()
-					return
-				}
+	err = watcher.Add(path)
+	if check(err) {
+		return err
+	}
+	for {
+		select {
+		case event, ok := <-watcher.Events:
+			log.Printf("event %v", event)
+			if ok && event.Op&fsnotify.Write == fsnotify.Write && !*changed {
+				*changed = true
 			}
 		}
-	}()
-
-	err = watcher.Add(path)
-	if err != nil {
-		log.Fatal(err)
 	}
-	<-done
 }
 
 func check(err error) bool {
