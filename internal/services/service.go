@@ -61,8 +61,8 @@ func watch(path string, changed *bool) error {
 	for {
 		select {
 		case event, ok := <-watcher.Events:
-			log.Printf("event %v", event)
-			if ok && event.Op&fsnotify.Write == fsnotify.Write && !*changed {
+			//log.Printf("event %v", event)
+			if ok && event.Op&fsnotify.Write == fsnotify.Write {
 				*changed = true
 			}
 		}
