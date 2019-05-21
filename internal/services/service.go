@@ -3,7 +3,6 @@ package services
 
 import (
 	"bufio"
-	"github.com/fsnotify/fsnotify"
 	"log"
 	"os"
 	"strings"
@@ -47,17 +46,6 @@ func readLines(fileName string) ([]string, error) {
 		lines = append(lines, line)
 	}
 	return lines, nil
-}
-
-func newWatcher(path string) (*fsnotify.Watcher, error) {
-	watcher, err := fsnotify.NewWatcher()
-	if check(err) {
-		return nil, err
-	}
-	if err = watcher.Add(path); check(err) {
-		return nil, err
-	}
-	return watcher, nil
 }
 
 func check(err error) bool {

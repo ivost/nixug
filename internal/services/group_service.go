@@ -1,7 +1,6 @@
 package services
 
 import (
-	"github.com/fsnotify/fsnotify"
 	"github.com/ivost/nixug/internal/config"
 	"github.com/ivost/nixug/internal/models"
 	"log"
@@ -11,73 +10,34 @@ import (
 
 type GroupService struct {
 	// groups can have duplicate ids and names
-	// so instead of map we'll use array
+	// so instead of map - use array
 	groups []models.Group
 	cfg    *config.Config
+	fw     *FileWatcher
 	mu     sync.RWMutex
-	//fileChanges chan string
-	fileChanged bool
 }
 
 func NewGroupService(cfg *config.Config) (*GroupService, error) {
+	var err error
 	log.Printf("NewGroupService")
 	s := &GroupService{
 		cfg: cfg,
-		//fileChanges: make(chan string),
-		fileChanged: true,
 	}
 	file := s.cfg.GroupFile
-	//log.Printf("group file: %v", file)
-	err := s.loadGroups(file)
-	if check(err) {
-		return nil, err
-	}
 	// watch for file changes
 	// we could reload the file on every change
 	// instead we just keep dirty flag and reload only when there is web request
-
-	watcher, err := newWatcher(file)
-	go func() {
-		for {
-			// set dirty flag on WRITE events
-			if event, ok := <-watcher.Events; ok && event.Op&fsnotify.Write == fsnotify.Write {
-				s.mu.Lock()
-				s.fileChanged = true
-				s.mu.Unlock()
-			}
-		}
-	}()
-	return s, err
-}
-
-func (s *GroupService) loadGroups(fileName string) error {
-	log.Printf("loadGroups: %v", fileName)
-	lines, err := readLines(fileName)
-	if err != nil {
-		return err
+	// to test: sed -i'.bak' -e 's/adm/admX/g' test/group
+	if s.fw, err = NewFileWatcher(file); check(err) {
+		return s, err
 	}
-	list := make([]models.Group, 0)
-	for _, line := range lines {
-		g, err := models.NewGroup(line)
-		// ignore bad lines
-		if err != nil {
-			continue
-		}
-		list = append(list, *g)
+	err = s.loadGroups(file)
+	if check(err) {
+		return nil, err
 	}
 
-	//sort by name to enable binary search
-	sort.Slice(list, func(i, j int) bool {
-		return list[i].Name < list[j].Name
-	})
-
-	// write lock
-	s.mu.Lock()
-	s.groups = list
-	// clear fileChanged flag
-	s.fileChanged = false
-	s.mu.Unlock()
-	return nil
+	go s.fw.Watch()
+	return s, nil
 }
 
 // FindGroups searches groups matching given example
@@ -113,14 +73,40 @@ func (s *GroupService) FindGroups(example *models.Group) []models.Group {
 
 // reload group array if file has been modified
 func (s *GroupService) loadIfDirty() {
-	s.mu.RLock()
-	if s.fileChanged {
-		s.mu.RUnlock()
+	if s.fw.HasChanged() {
 		err := s.loadGroups(s.cfg.GroupFile)
 		check(err)
-	} else {
-		s.mu.RUnlock()
 	}
+}
+
+func (s *GroupService) loadGroups(fileName string) error {
+	log.Printf("loadGroups: %v", fileName)
+	lines, err := readLines(fileName)
+	if err != nil {
+		return err
+	}
+	list := make([]models.Group, 0)
+	for _, line := range lines {
+		g, err := models.NewGroup(line)
+		// ignore bad lines
+		if err != nil {
+			continue
+		}
+		list = append(list, *g)
+	}
+
+	//sort by name to enable binary search
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].Name < list[j].Name
+	})
+
+	// write lock
+	s.mu.Lock()
+	s.groups = list
+	// clear dirty flag
+	s.fw.SetDirty(false)
+	s.mu.Unlock()
+	return nil
 }
 
 // groupsByIdName matches groups given example group with id and/or name
