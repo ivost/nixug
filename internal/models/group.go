@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 )
 
@@ -16,13 +15,9 @@ func NewGroup(line string) (*Group, error) {
 	f := strings.Split(line, ":")
 	//adm:x:4:syslog,tap
 	if len(f) < 4 {
-		return nil, fmt.Errorf("invalid line %v", line)
+		return nil, fmt.Errorf("invalid group rec: %v", line)
 	}
-	n, err := strconv.Atoi(f[2])
-	if err != nil {
-		return nil, err
-	}
-	g := &Group{Name: f[0], GID: n}
+	g := &Group{Name: f[0], GID: safeInt(f[2])}
 	if len(f[3]) > 0 {
 		g.Members = strings.Split(f[3], ",")
 	}

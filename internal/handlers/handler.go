@@ -6,10 +6,13 @@ import (
 )
 
 const (
-	Id     = "id"
 	Gid    = "gid"
+	Uid    = "uid"
 	Name   = "name"
 	Member = "member"
+	Comment = "comment"
+	Home   = "home"
+	Shell  = "shell"
 	Indent = "  "
 )
 

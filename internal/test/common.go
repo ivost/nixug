@@ -8,6 +8,25 @@ import (
 	"time"
 )
 
+
+//func runtests(t *testing.T, ) {
+//	for name, tc := range tests {
+//		t.Run(name, func(t *testing.T) {
+//			g, err := NewGroup(tc.line)
+//			// negative test?
+//			if !tc.good {
+//				if err == nil {
+//					t.Fail()
+//				}
+//				return
+//			}
+//			assert.NoError(t, err)
+//			assert.EqualValues(t, tc.want, g)
+//		})
+//	}
+//
+//}
+
 // LimitedRun executes delegate for limited time and run count // done chan bool,
 func LimitedRun(maxSec int, maxCount int, delegate func()) {
 	start := time.Now()

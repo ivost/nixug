@@ -5,21 +5,16 @@ import (
 	"testing"
 )
 
-func TestNewGroup(t *testing.T) {
+func TestNewUser(t *testing.T) {
 
 	tests := map[string]struct {
 		line string
-		want *Group
+		want *User
 		good bool
 	}{
 		"good1": {
-			line: "root:x:0:",
-			want: &Group{Name: "root", GID: 0},
-			good: true,
-		},
-		"good2": {
-			line: "adm:x:4:syslog,tap",
-			want: &Group{Name: "adm", GID: 4, Members: []string{"syslog", "tap"}},
+			line: "ivos:x:1001:1001:Ivo Stoyanov,,,:/home/ivos:/bin/bash",
+			want: &User{Name: "ivos", GID: 1001, UID: 1001, Comment: "Ivo Stoyanov,,,", Home: "/home/ivos", Shell: "/bin/bash"},
 			good: true,
 		},
 		"bad1": {
@@ -33,14 +28,14 @@ func TestNewGroup(t *testing.T) {
 			good: false,
 		},
 		"bad3": {
-			line: "foo:x:bar",
+			line: "foo:x:bar:",
 			want: nil,
 			good: false,
 		},
 	}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			g, err := NewGroup(tc.line)
+			u, err := NewUser(tc.line)
 			// negative test?
 			if !tc.good {
 				if err == nil {
@@ -49,7 +44,7 @@ func TestNewGroup(t *testing.T) {
 				return
 			}
 			assert.NoError(t, err)
-			assert.EqualValues(t, tc.want, g)
+			assert.EqualValues(t, tc.want, u)
 		})
 	}
 }

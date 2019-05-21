@@ -1,5 +1,5 @@
 // Package handlers contains REST handlers
-// It deals with handling htpp requests
+// It processes http requests
 // business logic is in services
 package handlers
 
@@ -10,17 +10,7 @@ import (
 
 type Context struct {
 	echo.Context
-	//mu       sync.RWMutex
-	//err      error
 	GroupSvc *services.GroupService
+	UserSvc  *services.UserService
 }
 
-//func (c *Context) NewGroupService() *services.GroupService {
-//	c.mu.Lock()
-//	defer c.mu.Unlock()
-//	if c.GroupSvc == nil {
-//		log.Printf("NewGroupService")
-//		c.GroupSvc, _ = services.NewGroupService()
-//	}
-//	return c.GroupSvc
-//}

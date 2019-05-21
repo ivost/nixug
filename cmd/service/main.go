@@ -13,7 +13,7 @@ import (
 const SigningSecretKey = "nix"
 
 const (
-	VERSION = "v0.5.20.0"
+	VERSION = "v0.5.21.0"
 )
 
 func main() {
@@ -25,7 +25,10 @@ func main() {
 	gs, err := services.NewGroupService(cfg)
 	exitOnErr(err)
 
-	e := initEcho(gs)
+	us, err := services.NewUserService(cfg)
+	exitOnErr(err)
+
+	e := initEcho(gs, us)
 	exitOnErr(err)
 
 	initRouting(e)
@@ -34,7 +37,7 @@ func main() {
 	log.Printf("server exit: %v", err.Error())
 }
 
-func initEcho(groupSvc *services.GroupService) *echo.Echo {
+func initEcho(groupSvc *services.GroupService, userSvc *services.UserService) *echo.Echo {
 	// new echo instance
 	e := echo.New()
 	e.HideBanner = true
@@ -42,7 +45,7 @@ func initEcho(groupSvc *services.GroupService) *echo.Echo {
 	// convert echo context to our context - make available in middleware
 	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			cc := &handlers.Context{Context: c, GroupSvc: groupSvc}
+			cc := &handlers.Context{Context: c, GroupSvc: groupSvc, UserSvc: userSvc}
 			return h(cc)
 		}
 	})
@@ -58,6 +61,31 @@ func initEcho(groupSvc *services.GroupService) *echo.Echo {
 
 	return e
 }
+
+func initRouting(e *echo.Echo) {
+	// Signing Key for our auth middleware
+	//jwt := middleware.JWT(getSigningKey())
+
+	e.GET("/health", handlers.HealthCheck)
+
+	// Authentication route
+	// use nix / nix to get auth.token
+	e.GET("/auth/:key/:secret", handlers.Login)
+
+	// groups routes
+	groups := e.Group("/groups")
+	groups.GET("", handlers.GetAllGroups)
+	groups.GET("/:gid", handlers.GetGroupById)
+	groups.GET("/query", handlers.SearchGroups)
+
+	// users routes
+	users := e.Group("/users")
+	users.GET("", handlers.GetAllUsers)
+	users.GET("/:uid", handlers.GetUserById)
+	users.GET("/query", handlers.SearchUsers)
+
+}
+
 
 func getSigningKey() []byte {
 	return []byte(SigningSecretKey)
@@ -81,19 +109,3 @@ func exitOnErr(err error) {
 	os.Exit(1)
 }
 
-func initRouting(e *echo.Echo) {
-	// Signing Key for our auth middleware
-	//jwt := middleware.JWT(getSigningKey())
-
-	e.GET("/health", handlers.HealthCheck)
-
-	// Authentication route
-	// use nix / nix to get auth.token
-	e.GET("/auth/:key/:secret", handlers.Login)
-
-	// groups routes
-	groups := e.Group("/groups")
-	groups.GET("", handlers.GetAllGroups)
-	groups.GET("/:gid", handlers.GetGroupById)
-	groups.GET("/query", handlers.SearchGroups)
-}
