@@ -13,4 +13,3 @@ type Context struct {
 	GroupSvc *services.GroupService
 	UserSvc  *services.UserService
 }
-

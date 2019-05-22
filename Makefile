@@ -29,6 +29,18 @@ run:
 	go run cmd/service/main.go
 
 help:
+	@echo '==='
+	@echo 'build commands'
+	@echo '==='
+
+	@echo run   - build and run app
+	@echo test  - unit tests
+	@echo testv - unit tests with output
+	@echo testr - unit tests with race detection
+	@echo check - test test-race vet fmt
+	@echo scheck- static analysis
+	@echo pedantic - check unparam errcheck
+
 	@echo h     - health check
 	@echo getu  - get users
 	@echo getg  - get groups
@@ -40,7 +52,7 @@ test: install
 testv: install
 	go test $(MOD) ./... -v
 
-test-race: | test
+testr: | test
 	go test -race $(MOD) ./...
 
 vet: | test
@@ -49,7 +61,7 @@ vet: | test
 fmt:
 	go fmt ./...
 
-check: test test-race vet fmt
+check: test testr vet fmt
 
 install:
 	@#go install $(MOD) -v -tags "" ./...

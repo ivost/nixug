@@ -6,14 +6,14 @@ import (
 )
 
 const (
-	Gid    = "gid"
-	Uid    = "uid"
-	Name   = "name"
-	Member = "member"
+	Gid     = "gid"
+	Uid     = "uid"
+	Name    = "name"
+	Member  = "member"
 	Comment = "comment"
-	Home   = "home"
-	Shell  = "shell"
-	Indent = "  "
+	Home    = "home"
+	Shell   = "shell"
+	Indent  = "  "
 )
 
 type Handler interface {
@@ -81,15 +81,8 @@ func intQueryParam(c echo.Context, name string) int {
 	s := strQueryParam(c, name)
 	n, err := strconv.Atoi(s)
 	if err != nil {
+		// -1 is "wildcard" indicator
 		return -1
 	}
 	return n
 }
-
-//func check(err error) bool {
-//	if err == nil {
-//		return false
-//	}
-//	log.Print(err.Error())
-//	return true
-//}

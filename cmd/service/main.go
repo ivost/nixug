@@ -13,7 +13,7 @@ import (
 const SigningSecretKey = "nix"
 
 const (
-	VERSION = "v0.5.21.0"
+	VERSION = "v0.5.25.0"
 )
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
 	us, err := services.NewUserService(cfg)
 	exitOnErr(err)
 
-	e := initEcho(gs, us)
+	e := NewEcho(gs, us)
 	exitOnErr(err)
 
 	initRouting(e)
@@ -37,7 +37,7 @@ func main() {
 	log.Printf("server exit: %v", err.Error())
 }
 
-func initEcho(groupSvc *services.GroupService, userSvc *services.UserService) *echo.Echo {
+func NewEcho(groupSvc *services.GroupService, userSvc *services.UserService) *echo.Echo {
 	// new echo instance
 	e := echo.New()
 	e.HideBanner = true
@@ -83,22 +83,11 @@ func initRouting(e *echo.Echo) {
 	users.GET("", handlers.GetAllUsers)
 	users.GET("/:uid", handlers.GetUserById)
 	users.GET("/query", handlers.SearchUsers)
-
 }
-
 
 func getSigningKey() []byte {
 	return []byte(SigningSecretKey)
 }
-
-//func check(err error) bool {
-//	if err == nil {
-//		return false
-//	}
-//	s := err.Error()
-//	log.Print(s)
-//	return true
-//}
 
 func exitOnErr(err error) {
 	if err == nil {
@@ -108,4 +97,3 @@ func exitOnErr(err error) {
 	log.Print(s)
 	os.Exit(1)
 }
-

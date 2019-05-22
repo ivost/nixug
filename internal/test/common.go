@@ -8,26 +8,45 @@ import (
 	"time"
 )
 
+func NewTestGroups() []models.Group {
+	// must be sorted by name
+	return []models.Group{
+		{Name: "adm", GID: 4, Members: []string{"syslog", "foo"}},
+		{Name: "log", GID: 42, Members: []string{"foo", "bar"}},
+		{Name: "root", GID: 0},
+	}
+}
 
-//func runtests(t *testing.T, ) {
-//	for name, tc := range tests {
-//		t.Run(name, func(t *testing.T) {
-//			g, err := NewGroup(tc.line)
-//			// negative test?
-//			if !tc.good {
-//				if err == nil {
-//					t.Fail()
-//				}
-//				return
-//			}
-//			assert.NoError(t, err)
-//			assert.EqualValues(t, tc.want, g)
-//		})
-//	}
-//
-//}
+func NewTestUsers() []models.User {
+	// must be sorted by name
+	return []models.User{
+		{Name: "root", UID: 0, GID: 0, Comment: "root", Home: "/root", Shell: "/bin/bash"},
+		{Name: "sshd", UID: 121, GID: 65534, Home: "/var/run/sshd", Shell: "/usr/sbin/nologin"},
+	}
+}
 
-// LimitedRun executes delegate for limited time and run count // done chan bool,
+// appendToFile If the file doesn't exist, create it, append to the file
+func AppendToFile(fileName string, data string) error {
+	//log.Print("AppendToFile")
+	f, err := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if check(err) {
+		return err
+	}
+	defer f.Close()
+	_, err = f.Write([]byte(data))
+	_, _ = f.Write([]byte("\n"))
+	return err
+}
+
+func check(err error) bool {
+	if err == nil {
+		return false
+	}
+	log.Print(err.Error())
+	return true
+}
+
+// LimitedRun executes delegate for limited time and run count
 func LimitedRun(maxSec int, maxCount int, delegate func()) {
 	start := time.Now()
 	maxNs := int64(maxSec) * int64(time.Second)
@@ -42,37 +61,4 @@ func LimitedRun(maxSec int, maxCount int, delegate func()) {
 			break
 		}
 	}
-	//done <- true
-}
-
-// appendToFile If the file doesn't exist, create it, append to the file
-func AppendToFile(fileName string, data string) error {
-	//log.Print("AppendToFile")
-	f, err := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if check(err) {
-		return err
-	}
-	defer f.Close()
-	_, err = f.Write([]byte(data))
-	//log.Printf("written %v bytes", n)
-	_, _ = f.Write([]byte("\n"))
-	return err
-}
-
-func NewTestGroups() []models.Group {
-	// must be sorted by name
-	g := []models.Group{
-		{Name: "adm", GID: 4, Members: []string{"syslog", "foo"}},
-		{Name: "log", GID: 42, Members: []string{"foo", "bar"}},
-		{Name: "root", GID: 0},
-	}
-	return g
-}
-
-func check(err error) bool {
-	if err == nil {
-		return false
-	}
-	log.Print(err.Error())
-	return true
 }

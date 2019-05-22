@@ -12,9 +12,9 @@ type UserService struct {
 	// users can have duplicate ids and names
 	// so instead of map - use array
 	users []models.User
-	cfg    *config.Config
-	fw     *FileWatcher
-	mu     sync.RWMutex
+	cfg   *config.Config
+	fw    *FileWatcher
+	mu    sync.RWMutex
 }
 
 func NewUserService(cfg *config.Config) (*UserService, error) {
@@ -63,6 +63,7 @@ func (s *UserService) FindUsers(example *models.User) []models.User {
 	return res
 }
 
+// check user vs example rec for exact match on non-empty fields
 func matched(ex models.User, u models.User) bool {
 	if ex.Comment != "" && u.Comment != ex.Comment {
 		return false
@@ -74,6 +75,13 @@ func matched(ex models.User, u models.User) bool {
 		return false
 	}
 	if ex.GID >= 0 && u.GID != ex.GID {
+		return false
+	}
+	// name and UID should be compared already - double check
+	if ex.UID >= 0 && u.UID != ex.UID {
+		return false
+	}
+	if ex.Name != "" && u.Name != ex.Name {
 		return false
 	}
 	return true

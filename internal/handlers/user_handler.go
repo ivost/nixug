@@ -30,10 +30,10 @@ func GetAllUsers(c echo.Context) error {
 }
 
 func GetUserById(c echo.Context) error {
-	ex := &models.User{UID: intParam(c, Uid)}
+	ex := &models.User{UID: intParam(c, Uid), GID: -1}
 	users := userService(c).FindUsers(ex)
 	if len(users) == 0 {
-		return c.NoContent(http.StatusNotFound)
+		return c.String(http.StatusNotFound, "not found")
 	}
 	return c.JSONPretty(http.StatusOK, users[0], Indent)
 }
