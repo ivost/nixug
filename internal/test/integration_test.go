@@ -3,15 +3,19 @@
 package test
 
 import (
-	"github.com/ivost/nixug/internal/services"
 	"log"
+	"os/exec"
 	"testing"
 )
 
 func init() {
 	// assumes 'make install' has been executed
-	services.Run("pwd", true)
-	services.Run("../../nixug", true)
+	//services.Run("pwd", true)
+	//services.Run("pkill", true, "nixug")
+	// run in background
+	//services.Run("../../nixug", true)
+	cmd := exec.Command("../../nixug")
+	cmd.Start()
 }
 //var fooAddr = flag.String(...)
 

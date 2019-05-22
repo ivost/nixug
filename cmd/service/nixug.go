@@ -9,11 +9,9 @@ import (
 	"os"
 )
 
-//todo: read from env
-const SigningSecretKey = "nixug"
-
 const (
-	VERSION = "v0.5.22.1"
+	VERSION = "v0.5.22.2"
+	SigningSecretKey = "nixug"
 )
 
 func main() {
