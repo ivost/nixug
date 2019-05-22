@@ -36,11 +36,13 @@ func GetAllGroups(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, v, Indent)
 }
 
+// GetGroupById returns user(s) for given GID
+// We can't assume unique group ids
 func GetGroupById(c echo.Context) error {
 	ex := &models.Group{GID: intParam(c, Gid)}
 	g := groupService(c).FindGroups(ex)
 	if len(g) == 0 {
-		return c.NoContent(http.StatusNotFound)
+		return c.JSON(http.StatusNotFound, "not found")
 	}
 	return c.JSONPretty(http.StatusOK, g[0], Indent)
 }

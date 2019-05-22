@@ -37,8 +37,10 @@ help:
 	@echo test  - unit tests
 	@echo testv - unit tests with output
 	@echo testr - unit tests with race detection
+	@echo testi - integration tests
+
 	@echo check - test test-race vet fmt
-	@echo scheck- static analysis
+	@echo scheck   - static analysis
 	@echo pedantic - check unparam errcheck
 
 	@echo h     - health check
@@ -52,10 +54,14 @@ test: install
 testv: install
 	go test $(MOD) ./... -v
 
-testr: | test
+testr: test
 	go test -race $(MOD) ./...
 
-vet: | test
+testi: install
+	@echo Integration tests
+	go test internal/test/integration_test.go  -tags=integration -v
+
+vet: test
 	go vet ./...
 
 fmt:
@@ -64,9 +70,7 @@ fmt:
 check: test testr vet fmt
 
 install:
-	@#go install $(MOD) -v -tags "" ./...
-	go mod tidy
-	go install $(MOD) -v  ./...
+	go build cmd/service/main.go
 
 download:
 	go mod download

@@ -82,6 +82,7 @@ func initRouting(e *echo.Echo) {
 	users := e.Group("/users")
 	users.GET("", handlers.GetAllUsers)
 	users.GET("/:uid", handlers.GetUserById)
+	users.GET("/:uid/groups", handlers.GetUserGroups)
 	users.GET("/query", handlers.SearchUsers)
 }
 

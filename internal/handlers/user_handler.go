@@ -22,6 +22,15 @@ Example Query: ​GET /users/query?shell=%2Fbin%2Ffalse Example Response:
 [
 {“name”: “dwoodlins”, “uid”: 1001, “gid”: 1001, “comment”: “”, “home”: “/home/dwoodlins”, “shell”: “/bin/false”}
 ]
+
+GET /users/<uid>/groups
+Return all the groups for a given user.
+Example Response:
+[
+{“name”: “docker”, “gid”: 1002, “members”: [“dwoodlins”]}
+]
+
+
 */
 
 func GetAllUsers(c echo.Context) error {
@@ -29,13 +38,27 @@ func GetAllUsers(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, v, Indent)
 }
 
+// GetUserById returns user(s) for given UID
+// We can't assume unique user ids
 func GetUserById(c echo.Context) error {
+	ex := &models.User{UID: intParam(c, Uid), GID: -1}
+	users := userService(c).FindUsers(ex)
+	if len(users) == 0 {
+		return c.JSON(http.StatusNotFound, "not found")
+	}
+	return c.JSONPretty(http.StatusOK, users[0], Indent)
+}
+
+func GetUserGroups(c echo.Context) error {
 	ex := &models.User{UID: intParam(c, Uid), GID: -1}
 	users := userService(c).FindUsers(ex)
 	if len(users) == 0 {
 		return c.String(http.StatusNotFound, "not found")
 	}
-	return c.JSONPretty(http.StatusOK, users[0], Indent)
+	// group example with name of the user
+	grEx := models.Group{GID:-1, Members:[]string{users[0].Name}}
+	groups := groupService(c).FindGroups(&grEx)
+	return c.JSONPretty(http.StatusOK, groups, Indent)
 }
 
 func SearchUsers(c echo.Context) error {
