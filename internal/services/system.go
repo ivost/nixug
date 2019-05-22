@@ -51,10 +51,3 @@ func DelaySec(seconds int) {
 		time.Sleep(1 * time.Second)
 	}
 }
-
-//func MinimumDelaySec(minSec int, seconds int) {
-//	if seconds < minSec {
-//		seconds = minSec
-//	}
-//	DelaySec(seconds)
-//}

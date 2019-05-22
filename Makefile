@@ -25,21 +25,20 @@ VERSION ?= $(GIT_REF)
 
 export GO111MODULE=on
 
-run:
-	go run cmd/service/main.go
-
 help:
-	@echo '==='
-	@echo 'build commands'
-	@echo '==='
+	@echo "==="
+	@echo "build commands"
+	@echo "==="
 
-	@echo run   - build and run app
-	@echo test  - unit tests
-	@echo testv - unit tests with output
-	@echo testr - unit tests with race detection
-	@echo testi - integration tests
+	@echo "build    - build ./nixug binary"
+	@echo "install  - install nixug binary (assuming GOPATH is in PATH)"
+	@echo "run      - build and run app"
+	@echo "test     - unit tests"
+	@echo "testv    - unit tests with output"
+	@echo "testr    - unit tests with race detection"
+	@echo "testi    - integration tests"
 
-	@echo check - test test-race vet fmt
+	@echo check    - test test-race vet fmt
 	@echo scheck   - static analysis
 	@echo pedantic - check unparam errcheck
 
@@ -48,26 +47,8 @@ help:
 	@echo getg  - get groups
 	@echo ---
 
-test: install
-	go test $(MOD) ./...
-
-testv: install
-	go test $(MOD) ./... -v
-
-testr: test
-	go test -race $(MOD) ./...
-
-testi: install
-	@echo Integration tests
-	go test internal/test/integration_test.go  -tags=integration -v
-
-vet: test
-	go vet ./...
-
-fmt:
-	go fmt ./...
-
-check: test testr vet fmt
+run:
+	go run cmd/service/nixug.go
 
 build:
 	go build cmd/service/nixug.go
@@ -75,9 +56,29 @@ build:
 install:
 	go install cmd/service/nixug.go
 
+test:
+	go test $(MOD) ./...
+
+testv:
+	go test $(MOD) ./... -v
+
+testr:
+	go test -race $(MOD) ./...
+
+testi: build
+	@echo Integration tests
+	go test internal/test/integration_test.go  -tags=integration -v
+
+vet:
+	go vet ./...
+
+fmt:
+	go fmt ./...
+
+check: test testr vet fmt
+
 download:
 	go mod download
-
 
 scheck:
 	@echo static analysis

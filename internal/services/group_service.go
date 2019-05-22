@@ -19,7 +19,7 @@ type GroupService struct {
 
 func NewGroupService(cfg *config.Config) (*GroupService, error) {
 	var err error
-	log.Printf("NewGroupService")
+	log.Printf("NewGroupService %+v", cfg)
 	s := &GroupService{
 		cfg: cfg,
 	}

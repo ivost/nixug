@@ -10,10 +10,10 @@ import (
 )
 
 //todo: read from env
-const SigningSecretKey = "nix"
+const SigningSecretKey = "nixug"
 
 const (
-	VERSION = "v0.5.25.0"
+	VERSION = "v0.5.22.1"
 )
 
 func main() {
@@ -21,7 +21,9 @@ func main() {
 
 	cfg, err := config.NewConfig(config.DefaultConfigFile)
 	exitOnErr(err)
-
+	if cfg == nil {
+		log.Fatal("no config")
+	}
 	gs, err := services.NewGroupService(cfg)
 	exitOnErr(err)
 
