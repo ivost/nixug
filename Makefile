@@ -69,8 +69,11 @@ fmt:
 
 check: test testr vet fmt
 
+build:
+	go build cmd/service/nixug.go
+
 install:
-	go build cmd/service/main.go
+	go install cmd/service/nixug.go
 
 download:
 	go mod download
