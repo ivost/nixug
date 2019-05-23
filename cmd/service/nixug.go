@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	VERSION = "v0.5.22.2"
+	VERSION = "v0.5.23.0"
 	SigningSecretKey = "nixug"
 )
 

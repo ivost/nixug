@@ -1,44 +1,121 @@
-## nixug
+# Unix users and groups query REST service - nixug
+
+Passwd as a Service
+The idea of this challenge is to create a minimal HTTP service that exposes the user and group information on a UNIX-like system that is usually locked away in the UNIX /etc/passwd and /etc/groups files.
+While this service is obviously a toy (and potentially a security nightmare), please treat it as you would a real web service. That means write production quality code per your standards, including at least: Unit Tests, and README documentation. Use any of the following languages and an idiomatic HTTP framework of your choosing: Java/Kotlin/Scala, C#/F#, Python, Ruby, Go, JavaScript, or Rust. Please post your solution to a public GitHub (or BitBucket or GitLab) repository and include instructions for running your service.
+To aid testing and deployment, the paths to the passwd and groups file should be configurable, defaulting to the standard system path. If the input files are absent or malformed, your service must indicate an error in a manner you feel is appropriate.
+This service is read-only but responses should reflect changes made to the underlying passwd and groups files while the service is running. 
 
 
-config file
+## Source code
 
-### Uses go modules - requires go v.1.11 or later
+Source code is available on github - https://github.com/ivost/nixug
 
-after git pull - try first
+git clone https://github.com/ivost/nixug.git
 
-go mod tidy
+# Implementation
 
-If invoked with -mod=readonly, the go command is disallowed from the implicit
-automatic updating of go.mod described above. Instead, it fails when any changes
-to go.mod are needed. This setting is most useful to check that go.mod does
-not need updates, such as in a continuous integration and testing system.
-The "go get" command remains permitted to update go.mod even with -mod=readonly,
-and the "go mod" commands do not take the -mod flag (or any other build flags).
+Linux users are stored in /etc/passwd file (but there are no passwords in it)
+and groups - in /etc/groups.
 
+For peculiar reasons user and group names and numerical ids may be not unique.
 
-uses labstack echo
-https://godoc.org/github.com/labstack/echo
+I started with simple storage model using go map - but then decided to use array and allow for cannonical duplication.
+In case of duplication linux uses the first match - so I am doing something similar.
 
-https://godoc.org/github.com/labstack/echo?importers
+The only perf improvement to help with O(n) when using arrays is to do some sorting of user names and user groups when storing them in the array.
 
-https://engineering.checkr.com/introducing-checkrs-integration-testing-workflow-and-openmock-572c64209891
+Once sorted - search by name uses binary search which is O(log n).
+Assumption is that querying by name is the most frequent operation.
 
 
-PROFILING 
+
+
+
+## Prerequisites
+
+make (required for Makefile convenience commands)
+
+one of: 
+* go v.1.11 or later
+* docker
+
+nixug uses go modules - it requires go v.1.11 or later and export GO111MODULE=on
+alternatively it can be run via docker command - the image is available in dockerhub
+
+It uses labstack echo web framework  https://godoc.org/github.com/labstack/echo
+
+
+### Configuration
+
+via config.json (expected in current directory when running)
+
+example 
+
+{
+    "Host": "0.0.0.0",
+    "Port": 8080,
+    "UserFile": "/etc/passwd",
+    "GroupFile": "/etc/group",
+    "Auth": false
+}
+
+### Running/building
+
+Running 
+```
+make help
+```
+will show available targets
+
+```
+build    - build ./nixug binary
+install  - install nixug binary (assuming GOPATH is in PATH)
+run      - build using go and run app 
+auth     - get auth token
+
+test     - unit tests (no output)
+testv    - unit tests with output
+testr    - unit tests with race detection
+testi    - integration tests (will start nixug in background)
+
+check    - race test + go vet + go fmt
+scheck   - static analysis
+pedantic - check unparam errcheck
+bench    - run benchmark tests
+cpu      - cpu profiling
+
+drun     - docker run will pull/run the image to dockerhub
+docker   - will build docker image
+push     - will push the built image to dockerhub
+kill     - will kill running nixus and running container
+
+for demo - assumes running nixug
+
+health   - health check
+get-u    - get users 
+get-g    - get groups
+```
+
+### Testing
+
+#### Unit tests
+
+make test
+
+#### Integration tests
+
+make testi
+
+### Profiling (optional)
 
 https://github.com/google/pprof/blob/master/doc/README.md
 
 go get github.com/pkg/profile
 go get github.com/google/pprof
 
-https://golang.org/pkg/net/http/pprof/
-https://blog.golang.org/2011/06/profiling-go-programs.html
-
 go tool pprof http://localhost:6060/debug/pprof/trace?seconds=5
-
 go tool pprof http://localhost:6060/debug/pprof/heap
-
 
 nixug -cpu prof-file
 
@@ -46,12 +123,24 @@ pprof -http localhost:8080 prof-file
 
 ----
 
+### Authentication (optional)
+
+Uses JWT auth.token in the headers - can be turned on/off in configuration
+
+ "Auth": true
+
+#### How to demo/test
+
+```$xslt
+
 pip install -U httpie-jwt-auth
 
-http localhost:8080/v1/auth/nix/nix
+http localhost:8080/auth/nix/nix
 
 TOKEN=$(http localhost:8484/v1/auth/nix/nix); echo $TOKEN
 
 http \
   --auth-type=jwt --auth=$TOKEN \
-  localhost:8080/v1/groups/1
+  localhost:8080/users/0
+
+```
