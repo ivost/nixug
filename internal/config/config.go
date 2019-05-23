@@ -4,6 +4,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ivost/nixug/internal/test"
 	"io/ioutil"
 )
 
@@ -37,6 +38,7 @@ func NewDefaultConfig() *Config {
 func ReadConfig(configFile string) (*Config, error) {
 	d, err := ioutil.ReadFile(configFile)
 	if err != nil {
+		test.PrintCurrentDir()
 		return nil, err
 	}
 	c := new(Config)
@@ -52,10 +54,4 @@ func (c Config) GetHostPort() string {
 func (c Config) GetEndpoint() string {
 	s := fmt.Sprintf("http://%v", c.GetHostPort())
 	return s
-}
-
-func (c Config) GetPath(typ string, id string) string {
-	s := fmt.Sprintf("%v", c.GetEndpoint())
-	p := "/v1"
-	return fmt.Sprintf("%v%v/%v", s, p, id)
 }

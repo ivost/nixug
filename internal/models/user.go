@@ -1,8 +1,9 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
-	"strconv"
+	//"strconv"
 	"strings"
 )
 
@@ -35,14 +36,8 @@ func NewUser(line string) (*User, error) {
 	return u, nil
 }
 
-func safeStr(s string) string {
-	return strings.Trim(s, " \t\n")
+func NewUsersFromJson(jsn []byte) (res []User, err error) {
+	err = json.Unmarshal(jsn, &res)
+	return
 }
 
-func safeInt(s string) int {
-	n, err := strconv.Atoi(s)
-	if err != nil {
-		return 0
-	}
-	return n
-}

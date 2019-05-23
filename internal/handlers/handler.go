@@ -2,7 +2,11 @@ package handlers
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
+	"io/ioutil"
+	"net/http"
 	"strconv"
+	"testing"
 )
 
 const (
@@ -16,31 +20,6 @@ const (
 	Indent  = "  "
 )
 
-type Handler interface {
-	DoGet() error
-	//DoInfo() error
-	//DoPost() error
-	//DoPut() error
-	//DoPatch() error
-	//DoDelete() error
-}
-
-//type handler struct {
-//	context *Context
-//	lock    sync.RWMutex
-//}
-
-//func (h *handler) PrepGet() (*models.ReadParam, error) {
-//	c := h.context
-//	err := c.Valid()
-//	if err != nil {
-//		return nil, err
-//	}
-//	//log.Printf("client accepts type %v, stream content type is %v", at, m.Content)
-//	rp := parseQuery(c)
-//	return &rp, nil
-//}
-
 // strParam returns string parameter from context
 func strParam(c echo.Context, name string) string {
 	val := c.Param(name)
@@ -48,6 +27,14 @@ func strParam(c echo.Context, name string) string {
 		return ""
 	}
 	return val
+}
+
+func read(t *testing.T, resp *http.Response) []byte {
+	body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	assert.NoError(t, err)
+	assert.NotNil(t, body)
+	return body
 }
 
 // intParam returns int parameter from context, -1 if not found/error

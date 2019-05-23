@@ -19,6 +19,15 @@ func main() {
 
 	cfg, err := config.NewConfig(config.DefaultConfigFile)
 	exitOnErr(err)
+	e, err := initialize(cfg)
+	exitOnErr(err)
+	// start our server
+	err = e.Start(cfg.GetHostPort())
+	log.Printf("server exit: %v", err.Error())
+}
+
+func initialize(cfg *config.Config) (*echo.Echo, error) {
+
 	if cfg == nil {
 		log.Fatal("no config")
 	}
@@ -32,9 +41,7 @@ func main() {
 	exitOnErr(err)
 
 	initRouting(e)
-	// start our server
-	err = e.Start(cfg.GetHostPort())
-	log.Printf("server exit: %v", err.Error())
+	return e, err
 }
 
 func NewEcho(groupSvc *services.GroupService, userSvc *services.UserService) *echo.Echo {

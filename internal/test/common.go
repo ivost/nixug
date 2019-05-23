@@ -2,6 +2,7 @@
 package test
 
 import (
+	"fmt"
 	"github.com/ivost/nixug/internal/models"
 	"log"
 	"os"
@@ -36,6 +37,11 @@ func AppendToFile(fileName string, data string) error {
 	_, err = f.Write([]byte(data))
 	_, _ = f.Write([]byte("\n"))
 	return err
+}
+
+func PrintCurrentDir() {
+	dir, _ := os.Getwd()
+	fmt.Printf("current dir: %v", dir)
 }
 
 func check(err error) bool {

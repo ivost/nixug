@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -22,4 +23,9 @@ func NewGroup(line string) (*Group, error) {
 		g.Members = strings.Split(f[3], ",")
 	}
 	return g, nil
+}
+
+func NewGroupsFromJson(jsn []byte) (res []Group, err error) {
+	err = json.Unmarshal(jsn, &res)
+	return
 }

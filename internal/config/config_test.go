@@ -12,22 +12,4 @@ func TestConfig(t *testing.T) {
 	assert.NotNil(t, c)
 	assert.True(t, len(c.GroupFile) > 0)
 	assert.True(t, len(c.UserFile) > 0)
-
-	//tests := map[string]struct {
-	//	input string
-	//	want  *config.Config
-	//}{
-	//	"good": {
-	//		input: config.DefaultConfigFile,
-	//		want: test.NewConfig(),
-	//	},
-	//}
-	//
-	//for name, tc := range tests {
-	//	t.Run(name, func(t *testing.T) {
-	//		c, err := config.ReadConfig(tc.input)
-	//		assert.Nil(t, err)
-	//		assert.EqualValues(t, tc.want, c)
-	//	})
-	//}
 }

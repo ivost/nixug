@@ -2,6 +2,6 @@
     "Host": "0.0.0.0",
     "Port": 8080,
 
-    "UserFile": "/etc/passwd",
-    "GroupFile": "/etc/group"
+    "UserFile": "../test/passwd",
+    "GroupFile": "../test/group"
 }

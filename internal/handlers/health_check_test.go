@@ -1,57 +1,26 @@
 package handlers
 
 import (
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
 func TestHealth(t *testing.T) {
 	// Setup
-	//e := echo.New()
-	//req := httptest.NewRequest(http.MethodGet, "/health", nil)
-	//rec := httptest.NewRecorder()
-	//c := e.NewContext(req, rec)
-	//c.SetPath("/health")
-	//err := HealthCheck(c)
-	//res := e.GET("/health", HealthCheck)
-	//log.Printf("%+v", res)
-	//// Assertions
-	//if assert.NoError(t, err) {
-	//	assert.Equal(t, http.StatusOK, rec.Code)
-	//}
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/health", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetPath("/health")
+	err := HealthCheck(c)
+	e.GET("/health", HealthCheck)
+	//t.Logf("%+v", res)
+	// Assertions
+	if assert.NoError(t, err) {
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, "OK", string(read(t, rec.Result())))
+	}
 }
-
-//c.SetParamNames("email")
-//c.SetParamValues("jon@labstack.com")
-
-//func TestLoad(t *testing.T) {
-//	tests := map[string]struct {
-//		input string
-//		want  *models.MetaMap
-//		good  bool
-//	}{
-//		"bad": {
-//			input: "foo",
-//			want:  nil,
-//			good:  false,
-//		},
-//	}
-//
-//	for name, tc := range tests {
-//		t.Run(name, func(t *testing.T) {
-//			m, err := LoadMeta(tc.input)
-//			if tc.good && err != nil {
-//				t.Fatalf("load error: %v", err)
-//			}
-//			if tc.want != nil {
-//				tc.want.Range(func(key, value interface{}) bool {
-//					x, ok := m.Load(key)
-//					assert.True(t, ok)
-//					if !reflect.DeepEqual(x.(models.Meta), value.(models.Meta)) {
-//						t.Fatalf("expected: %v, got: %v", tc.want, m)
-//					}
-//					return true
-//				})
-//			}
-//		})
-//	}
-//}
