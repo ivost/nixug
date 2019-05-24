@@ -91,8 +91,8 @@ Assuming make and docker are available the service can be started just by
 # docker pull and run
 make drun
 
-# or without make
-docker run --rm -d -p 8080:8080 ivostoy/nixug:1.0.5.24
+# or without make (prefix with sudo if docker requires root access)
+docker run --rm -d -n nixug -p 8080:8080 ivostoy/nixug:1.0.5.24
 
 # demo users
 make users
@@ -101,7 +101,6 @@ make users
 make groups
 
 ```
-
 
 Running 
 ```
