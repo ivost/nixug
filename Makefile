@@ -14,6 +14,9 @@ HP := 0.0.0.0:8080
 
 STYLE1=monokai
 HTTP=http --style=$(STYLE1)
+
+HTTP=curl
+
 AUTH=--auth-type=jwt --auth=$(shell http http://localhost:8080/auth/nix/nix)
 
 GIT_REF = $(shell git rev-parse --short=8 --verify HEAD)
