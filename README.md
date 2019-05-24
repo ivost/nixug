@@ -65,6 +65,7 @@ via config.json (expected in current directory when running)
 
 example 
 
+```bash
 {
     "Host": "0.0.0.0",
     "Port": 8080,
@@ -73,12 +74,32 @@ example
     "Auth": false
 }
 
+```
+where:
+
+Host and Port can be used to configure listening address and port
+
+UserFile and GroupFile point to passwd and group files
+
+Auth enables or disables API token authentication
+
 ### Running/building
 
 Assuming make and docker are available the service can be started just by
 
 ```
+# docker pull and run
 make drun
+
+# or without make
+docker run --rm -d -p 8080:8080 ivostoy/nixug:1.0.5.24
+
+# demo users
+make users
+
+# demo groups
+make groups
+
 ```
 
 

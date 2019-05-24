@@ -1,3 +1,5 @@
 #! /bin/sh
-cd /run/nixug
+
+cd /root/nixug
+ls -al
 ./nixug
