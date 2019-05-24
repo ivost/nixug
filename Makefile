@@ -127,17 +127,17 @@ kill:
 
 ######
 health:
-	@echo simple health check (OK)
+	@echo "simple health check (OK)"
 	curl $(HP)/health
 
 groups:
-	@echo get group with id 0 (root)
+	@echo "get group with id 0 (root)"
 	$(HTTP) $(HP)/groups/0
-	@echo get group with name sshd
+	@echo "get group with name sshd"
 	$(HTTP) $(HP)/groups/query?name=sshd
 
 users:
-	@echo get user with id 0 (root)
+	@echo "get user with id 0 (root)
 	$(HTTP) $(HP)/users/0
-	@echo get user with name adm
+	@echo "get user with name adm"
 	$(HTTP) $(HP)/users/query?name=adm
