@@ -13,8 +13,7 @@ PKGS := $(shell go list -mod=readonly ./...)
 HP := 0.0.0.0:8080
 
 STYLE1=monokai
-HTTP=http --style=$(STYLE1)
-
+#HTTP=http --style=$(STYLE1)
 HTTP=curl
 
 AUTH=--auth-type=jwt --auth=$(shell http http://localhost:8080/auth/nix/nix)
@@ -140,7 +139,7 @@ groups:
 	$(HTTP) $(HP)/groups/query?name=sshd
 
 users:
-	@echo "get user with id 0 (root)
+	@echo "get user with id 0 (root)"
 	$(HTTP) $(HP)/users/0
 	@echo "get user with name adm"
 	$(HTTP) $(HP)/users/query?name=adm
