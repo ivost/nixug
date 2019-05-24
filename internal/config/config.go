@@ -20,6 +20,7 @@ type Listener struct {
 type Config struct {
 	Host      string `json:"Host"`
 	Port      int    `json:"Port"`
+	Auth      bool   `json:"Auth"`
 	UserFile  string `json:"UserFile"`
 	GroupFile string `json:"GroupFile"`
 }

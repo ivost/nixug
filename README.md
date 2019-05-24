@@ -1,10 +1,20 @@
 # Unix users and groups query REST service - nixug
 
 Passwd as a Service
-The idea of this challenge is to create a minimal HTTP service that exposes the user and group information on a UNIX-like system that is usually locked away in the UNIX /etc/passwd and /etc/groups files.
-While this service is obviously a toy (and potentially a security nightmare), please treat it as you would a real web service. That means write production quality code per your standards, including at least: Unit Tests, and README documentation. Use any of the following languages and an idiomatic HTTP framework of your choosing: Java/Kotlin/Scala, C#/F#, Python, Ruby, Go, JavaScript, or Rust. Please post your solution to a public GitHub (or BitBucket or GitLab) repository and include instructions for running your service.
-To aid testing and deployment, the paths to the passwd and groups file should be configurable, defaulting to the standard system path. If the input files are absent or malformed, your service must indicate an error in a manner you feel is appropriate.
-This service is read-only but responses should reflect changes made to the underlying passwd and groups files while the service is running. 
+The idea of this challenge is to create a minimal HTTP service 
+that exposes the user and group information on 
+a UNIX-like system that is usually locked away in the UNIX /etc/passwd and /etc/groups files.
+While this service is obviously a toy (and potentially a security nightmare), 
+please treat it as you would a real web service. 
+That means write production quality code per your standards, 
+including at least: Unit Tests, and README documentation. 
+
+To aid testing and deployment, the paths to the passwd and groups file 
+should be configurable, defaulting to the standard system path. 
+If the input files are absent or malformed, your service must indicate 
+an error in a manner you feel is appropriate.
+This service is read-only but responses should reflect changes made to 
+the underlying passwd and groups files while the service is running. 
 
 
 ## Source code
@@ -18,9 +28,10 @@ git clone https://github.com/ivost/nixug.git
 Linux users are stored in /etc/passwd file (but there are no passwords in it)
 and groups - in /etc/groups.
 
-For peculiar reasons user and group names and numerical ids may be not unique.
+For peculiar reasons user and group names and numerical ids may contain duplicate values.
 
-I started with simple storage model using go map - but then decided to use array and allow for cannonical duplication.
+I started with simple storage model using go map - but then decided to use array and 
+allow for cannonical duplication.
 In case of duplication linux uses the first match - so I am doing something similar.
 
 The only perf improvement to help with O(n) when using arrays is to do some sorting of user names and user groups when storing them in the array.
@@ -28,9 +39,11 @@ The only perf improvement to help with O(n) when using arrays is to do some sort
 Once sorted - search by name uses binary search which is O(log n).
 Assumption is that querying by name is the most frequent operation.
 
+### Caching and monitoring for file changes
 
-
-
+nixug is using fsnotify to react on modifications of passwd and group files
+In-memory cache is not updated on every change - but on the first releveant client request when "dirty" flag indicates changes.
+ 
 
 ## Prerequisites
 
@@ -61,6 +74,13 @@ example
 }
 
 ### Running/building
+
+Assuming make and docker are available the service can be started just by
+
+```
+make drun
+```
+
 
 Running 
 ```
@@ -119,7 +139,7 @@ go tool pprof http://localhost:6060/debug/pprof/heap
 
 nixug -cpu prof-file
 
-pprof -http localhost:8080 prof-file
+pprof -http localhost:9090 prof-file
 
 ----
 
@@ -131,8 +151,8 @@ Uses JWT auth.token in the headers - can be turned on/off in configuration
 
 #### How to demo/test
 
-```$xslt
-
+```
+# installing httpie (optional)
 pip install -U httpie-jwt-auth
 
 http localhost:8080/auth/nix/nix

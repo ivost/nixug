@@ -1,24 +1,20 @@
 PROJECT = nixug
 
-STYLE1=monokai
+VER=1.0.5.24
+APP=nixug
+SRC=github.com/ivost/nixug
+REG=ivostoy
+IMG=$(REG)/$(APP):$(VER)
 
 SRCDIRS := ./...
-
 #MOD="-mod=readonly"
 MOD=
-
 PKGS := $(shell go list -mod=readonly ./...)
-
 HP := 0.0.0.0:8080
-G := $(V1)/meta
 
+STYLE1=monokai
 HTTP=http --style=$(STYLE1)
-AUTH=--auth-type=jwt --auth=$(shell http localhost:8484/v1/auth/nix/nix)
-
-ID1=users/1
-ID2=users/2
-ID3=groups/1
-ID4=groups/2
+AUTH=--auth-type=jwt --auth=$(shell http http://localhost:8080/auth/nix/nix)
 
 GIT_REF = $(shell git rev-parse --short=8 --verify HEAD)
 VERSION ?= $(GIT_REF)
@@ -51,10 +47,10 @@ run:
 	go run cmd/service/nixug.go
 
 build:
-	go build cmd/service/nixug.go
+	go build -v cmd/service/nixug.go
 
 install:
-	go install cmd/service/nixug.go
+	go install -v cmd/service/nixug.go
 
 test:
 	go test $(MOD) ./...
@@ -88,7 +84,6 @@ scheck:
 		$(PKGS)
 
 pedantic: check unparam errcheck
-
 unparam:
 	go install mvdan.cc/unparam
 	unparam ./...
@@ -97,9 +92,25 @@ errcheck:
 	go install github.com/kisielk/errcheck
 	errcheck $(PKGS)
 
+######
+docker:
+	cd _deployment && docker build .  -t $(IMG)
+
+push: docker
+	docker push $(IMG)
+pull:
+	docker pull $(IMG)
+drun:
+	docker run --rm -d -p 8080:8080 $(IMG)
+rund:
+	docker run -it $(IMG)
+
+######
 h:
 	$(HTTP) $(HP)/health
 
 getg:
 	$(HTTP) $(HP)/groups
 
+getu:
+	$(HTTP) $(HP)/users
