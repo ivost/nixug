@@ -4,7 +4,6 @@ import (
 	"github.com/ivost/nixug/internal/models"
 	"github.com/ivost/nixug/internal/services"
 	"github.com/labstack/echo/v4"
-	"log"
 	"net/http"
 )
 
@@ -79,6 +78,6 @@ func userFromQuery(c echo.Context) *models.User {
 	user.Home = strQueryParam(c, Home)
 	user.Comment = strQueryParam(c, Comment)
 	user.Shell = strQueryParam(c, Shell)
-	log.Printf("user example %+v", user)
+	//log.Printf("user example %+v", user)
 	return &user
 }

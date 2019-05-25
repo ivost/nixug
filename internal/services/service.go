@@ -9,6 +9,10 @@ import (
 )
 
 func containsAll(haystack []string, needles []string) bool {
+	//log.Printf("containsAll haystack %+v, needles %+v", haystack, needles)
+	if len(haystack) == 0 {
+		return false
+	}
 	for _, n := range needles {
 		if !contains(haystack, n) {
 			return false

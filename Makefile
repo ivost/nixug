@@ -82,7 +82,10 @@ testr:
 
 testi: build
 	@echo Integration tests
+	#pkill nixug
+	./nixug &
 	go test internal/test/integration_test.go  -tags=integration -v
+	pkill nixug
 
 vet:
 	go vet ./...

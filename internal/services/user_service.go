@@ -3,7 +3,6 @@ package services
 import (
 	"github.com/ivost/nixug/internal/config"
 	"github.com/ivost/nixug/internal/models"
-	"log"
 	"sort"
 	"sync"
 )
@@ -19,7 +18,7 @@ type UserService struct {
 
 func NewUserService(cfg *config.Config) (*UserService, error) {
 	var err error
-	log.Printf("NewUserService")
+	//log.Printf("NewUserService")
 	s := &UserService{
 		cfg: cfg,
 	}
@@ -96,7 +95,7 @@ func (s *UserService) loadIfDirty() {
 }
 
 func (s *UserService) loadUsers(fileName string) error {
-	log.Printf("loadUsers: %v", fileName)
+	//log.Printf("loadUsers: %v", fileName)
 	lines, err := readLines(fileName)
 	if err != nil {
 		return err

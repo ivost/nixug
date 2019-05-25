@@ -3,7 +3,6 @@ package services
 import (
 	"github.com/ivost/nixug/internal/config"
 	"github.com/ivost/nixug/internal/models"
-	"log"
 	"sort"
 	"sync"
 )
@@ -19,7 +18,7 @@ type GroupService struct {
 
 func NewGroupService(cfg *config.Config) (*GroupService, error) {
 	var err error
-	log.Printf("NewGroupService %+v", cfg)
+	//log.Printf("NewGroupService %+v", cfg)
 	s := &GroupService{
 		cfg: cfg,
 	}
@@ -54,6 +53,7 @@ func (s *GroupService) FindGroups(example *models.Group) []models.Group {
 		return s.groups
 	}
 	match := groupsByIdName(example, s.groups)
+	//log.Printf("match %+v", match)
 	// members?
 	if len(example.Members) == 0 {
 		return match
@@ -80,7 +80,7 @@ func (s *GroupService) loadIfDirty() {
 }
 
 func (s *GroupService) loadGroups(fileName string) error {
-	log.Printf("loadGroups: %v", fileName)
+	//log.Printf("loadGroups: %v", fileName)
 	lines, err := readLines(fileName)
 	if err != nil {
 		return err
